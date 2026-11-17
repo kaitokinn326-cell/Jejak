@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <title>Jejak — PWA Running Tracker & City Explorer</title>
-    <link id="pwa-manifest-link" rel="manifest" href="">
+    <link rel="manifest" href="./manifest.json">\n    <link rel="icon" type="image/svg+xml" href="./icon.svg">\n    <link rel="apple-touch-icon" href="./icon.svg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -648,56 +648,13 @@
     </div>
 
     <script>
-        // ==========================================================
-        // 1. EMBEDDED PWA MANIFEST & INLINE SERVICE WORKER (ALL-IN-ONE)
-        // ==========================================================
-        (function setupEmbeddedPWA() {
-            const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#070A11"/><path d="M130 370 Q 190 150, 260 270 T 385 155" fill="none" stroke="#A3E635" stroke-width="38" stroke-linecap="round"/><circle cx="385" cy="155" r="24" fill="#22D3EE"/></svg>`;
-            const iconUrl = 'data:image/svg+xml;base64,' + btoa(svgIcon);
-
-            const manifestObj = {
-                name: 'Jejak — Running Tracker & City Explorer',
-                short_name: 'Jejak',
-                description: 'Aplikasi lari minimalis dengan Peta Kabut Kota, Ghost Runner & Auto-Story.',
-                start_url: window.location.href,
-                display: 'standalone',
-                orientation: 'portrait',
-                background_color: '#070A11',
-                theme_color: '#070A11',
-                icons: [
-                    { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
-                    { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
-                ]
-            };
-
-            const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
-            const manifestURL = URL.createObjectURL(manifestBlob);
-            const linkEl = document.getElementById('pwa-manifest-link');
-            if (linkEl) linkEl.setAttribute('href', manifestURL);
-
-            // Register inline Service Worker via Blob URL if supported over HTTPS/localhost
-            if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
-                const swCode = `
-                    const CACHE_NAME = 'jejak-pwa-v1';
-                    self.addEventListener('install', (e) => {
-                        self.skipWaiting();
-                    });
-                    self.addEventListener('activate', (e) => {
-                        e.waitUntil(clients.claim());
-                    });
-                    self.addEventListener('fetch', (e) => {
-                        e.respondWith(
-                            fetch(e.request).catch(() => caches.match(e.request))
-                        );
-                    });
-                `;
-                try {
-                    const swBlob = new Blob([swCode], { type: 'application/javascript' });
-                    const swUrl = URL.createObjectURL(swBlob);
-                    navigator.serviceWorker.register(swUrl).catch(() => {});
-                } catch (err) {}
-            }
-        })();
+        // Register the static service worker served from the same origin.
+        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js', { scope: './' })
+                    .catch((error) => console.warn('Jejak service worker registration failed:', error));
+            });
+        }
 
         // Capture native beforeinstallprompt when browser supports 1-click install
         let deferredInstallPrompt = null;
