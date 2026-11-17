@@ -1,0 +1,19 @@
+{
+  "name": "Jejak — Running Tracker & City Explorer",
+  "short_name": "Jejak",
+  "description": "Aplikasi lari minimalis dengan Peta Kabut Kota, Ghost Runner & Auto-Story.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#070A11",
+  "theme_color": "#070A11",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
