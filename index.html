@@ -732,8 +732,8 @@ const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
 
         function updateWeeklyStatsUI() {
             const totalKm = 0;
-            document.getElementById('stat-weekly-km').textContent = totalKm.toFixed(1);
-            document.getElementById('stat-weekly-runs').textContent = '• 0 Sesi';
+            document.getElementById('stat-weekly-km').textContent = '—';
+            document.getElementById('stat-weekly-runs').textContent = '• Riwayat nonaktif';
 
             const pct = Math.min(100, Math.round((totalKm / 20) * 100));
             document.getElementById('weekly-ring-pct').textContent = `${pct}%`;
@@ -1086,7 +1086,7 @@ const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
                 }
             }, 1000);
 
-            showToast('⚡', `Mode ${state.mode} aktif! Rute & kabut direkam.`);
+            showToast('⚡', `Mode ${state.mode} aktif! Menunggu GPS yang akurat.`);
         }
 
         function advanceLiveRoutePosition(stepDelta) {
