@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#070A11">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Jejak — PWA Running Tracker & City Explorer</title>
+    <link id="pwa-manifest-link" rel="manifest" href="">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        obsidian: '#070A11',
+                        carddark: '#0F1523',
+                        limeaccent: '#A3E635',
+                        cyanaccent: '#22D3EE',
+                        coralaccent: '#FB7185'
+                    },
+                    animation: {
+                        'breathe': 'breathe 6s ease-in-out infinite',
+                        'float': 'float 8s ease-in-out infinite',
+                        'radar': 'radar 2.2s cubic-bezier(0, 0, 0.2, 1) infinite',
+                    },
+                    keyframes: {
+                        breathe: {
+                            '0%, 100%': { transform: 'scale(0.85)', opacity: '0.45' },
+                            '50%': { transform: 'scale(1.15)', opacity: '0.95' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px) scale(1)' },
+                            '50%': { transform: 'translateY(-14px) scale(1.04)' },
+                        },
+                        radar: {
+                            '0%': { transform: 'scale(0.8)', opacity: '0.85' },
+                            '100%': { transform: 'scale(2.4)', opacity: '0' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .tabular-nums { font-variant-numeric: tabular-nums; }
+
+        /* Ambient Background Mesh */
+        .ambient-mesh {
+            background-color: #04060B;
+            background-image: 
+                radial-gradient(at 15% 15%, rgba(163, 230, 53, 0.14) 0px, transparent 48%),
+                radial-gradient(at 85% 20%, rgba(34, 211, 238, 0.14) 0px, transparent 50%),
+                radial-gradient(at 50% 90%, rgba(251, 113, 133, 0.11) 0px, transparent 55%);
+        }
+
+        /* Responsive Tablet / Mobile Container */
+        .app-shell {
+            box-shadow: 
+                0 30px 70px -15px rgba(0, 0, 0, 0.85),
+                0 0 0 1px rgba(255, 255, 255, 0.12),
+                inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(15, 21, 35, 0.76);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+        }
+        html:not(.dark) .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        /* Checkerboard for Auto-Story Sticker Preview */
+        .checkerboard-bg {
+            background-image: 
+                linear-gradient(45deg, rgba(148, 163, 184, 0.14) 25%, transparent 25%), 
+                linear-gradient(-45deg, rgba(148, 163, 184, 0.14) 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, rgba(148, 163, 184, 0.14) 75%), 
+                linear-gradient(-45deg, transparent 75%, rgba(148, 163, 184, 0.14) 75%);
+            background-size: 16px 16px;
+            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+        }
+    </style>
+</head>
+<body class="ambient-mesh text-slate-100 min-h-screen flex flex-col items-center justify-center sm:p-4 selection:bg-lime-400 selection:text-slate-950 overflow-x-hidden">
+
+    <!-- ========================================================== -->
+    <!-- MAIN PWA SHELL (FULLSCREEN ON MOBILE/TABLET, FRAMED ON PC) -->
+    <!-- ========================================================== -->
+    <div id="app-shell" class="relative w-full sm:max-w-[460px] h-[100dvh] sm:h-[850px] sm:max-h-[94vh] bg-slate-100 dark:bg-[#070A11] text-slate-900 dark:text-slate-100 sm:rounded-[40px] sm:border-[8px] sm:border-[#161D2E] app-shell overflow-hidden flex flex-col transition-colors duration-300">
+        
+        <!-- Ambient Inner Decorative Glows -->
+        <div id="inner-ambient-glow" class="pointer-events-none absolute -top-24 -right-20 w-64 h-64 rounded-full bg-lime-400/15 blur-3xl transition-colors duration-500"></div>
+        <div class="pointer-events-none absolute -bottom-24 -left-20 w-64 h-64 rounded-full bg-cyan-400/10 blur-3xl"></div>
+
+        <!-- Top PWA Status & Install Helper Bar -->
+        <div class="relative z-30 pt-3 pb-2 px-5 flex items-center justify-between text-[11px] font-bold select-none border-b border-slate-200/50 dark:border-white/5">
+            <div class="flex items-center gap-2">
+                <span id="island-gps-dot" class="w-2 h-2 rounded-full bg-lime-400 animate-pulse"></span>
+                <span id="island-status-text" class="text-[10px] font-mono text-slate-500 dark:text-slate-300 tracking-tight">PWA SIAP • GPS AKTIF</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="openInstallModal()" id="btn-install-pwa" class="bg-lime-400/15 hover:bg-lime-400/25 text-lime-600 dark:text-lime-400 border border-lime-400/30 px-2.5 py-1 rounded-full text-[10px] font-extrabold flex items-center gap-1 transition active:scale-95">
+                    <span>📲</span>
+                    <span>Install ke MatePad</span>
+                </button>
+                <button onclick="toggleAppTheme()" title="Ganti Tema" class="w-7 h-7 rounded-full glass-panel flex items-center justify-center text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- In-App Toast Notification -->
+        <div id="app-toast" class="absolute top-14 left-4 right-4 z-50 transform -translate-y-28 opacity-0 transition-all duration-300 pointer-events-none">
+            <div class="bg-slate-900/95 dark:bg-slate-800/95 backdrop-blur-xl text-white px-4 py-3 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-3 text-xs font-semibold">
+                <span id="toast-icon" class="text-base">✨</span>
+                <span id="toast-msg" class="flex-1 leading-snug">Notifikasi</span>
+            </div>
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- MAIN VIEWS CONTAINER                                       -->
+        <!-- ========================================================== -->
+        <div class="relative flex-1 overflow-hidden flex flex-col">
+
+            <!-- ====================================================== -->
+            <!-- VIEW 1: BERANDA (HOME / ACTIVITY SETUP)                -->
+            <!-- ====================================================== -->
+            <div id="view-home" class="flex-1 overflow-y-auto no-scrollbar px-5 pt-3 pb-24 flex flex-col justify-between">
+                <div>
+                    <!-- Header Greeting -->
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <div class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                                <span id="home-location-label">📍 Bekasi Selatan • Siap Jelajah</span>
+                            </div>
+                            <h1 class="text-2xl font-extrabold tracking-tight flex items-center gap-1.5 mt-0.5">
+                                Jejak<span id="brand-dot" class="w-2 h-2 rounded-full bg-lime-400 inline-block mt-1 transition-colors"></span>
+                                <span class="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/10 text-slate-400">PWA</span>
+                            </h1>
+                        </div>
+                        <div class="text-right">
+                            <span id="status-clock" class="text-xs font-mono font-bold text-slate-400 tabular-nums">15:39</span>
+                        </div>
+                    </div>
+
+                    <!-- Weekly Exploration & Progress Ring Card -->
+                    <div class="glass-panel rounded-3xl p-4 mb-4 shadow-lg relative overflow-hidden">
+                        <div class="flex items-center justify-between gap-3">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1.5">
+                                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Eksplorasi Tersimpan</span>
+                                </div>
+                                <div class="flex items-baseline gap-1.5">
+                                    <span id="stat-weekly-km" class="text-2xl font-extrabold font-mono tabular-nums">14.8</span>
+                                    <span class="text-xs font-semibold text-slate-400">/ 20 km target</span>
+                                </div>
+                                <div class="mt-2.5 flex items-center gap-2 flex-wrap">
+                                    <span id="weekly-fog-badge" class="text-[11px] font-bold text-lime-500 dark:text-lime-400 bg-lime-400/10 border border-lime-400/20 px-2.5 py-0.5 rounded-full">🗺️ 38.4% Kota Terbuka</span>
+                                    <span id="stat-weekly-runs" class="text-[11px] font-semibold text-slate-400">• 4 Sesi</span>
+                                </div>
+                            </div>
+
+                            <!-- SVG Progress Ring -->
+                            <div class="relative w-16 h-16 flex items-center justify-center shrink-0">
+                                <svg class="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                                    <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="6" class="text-slate-200 dark:text-slate-800" />
+                                    <circle id="weekly-progress-ring" cx="32" cy="32" r="26" fill="none" stroke="#A3E635" stroke-width="6" stroke-linecap="round" stroke-dasharray="163.36" stroke-dashoffset="42" class="transition-all duration-700" />
+                                </svg>
+                                <span id="weekly-ring-pct" class="absolute text-xs font-extrabold font-mono tabular-nums">74%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Activity Mode Selector (Run / Jog / Walk) -->
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Mode Aktivitas</label>
+                            <span id="mode-pace-hint" class="text-[11px] font-mono font-semibold text-lime-500 dark:text-lime-400">Target Pace ~05:15/km</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2.5 glass-panel p-1.5 rounded-2xl">
+                            <button onclick="selectActivityMode('Run')" id="mode-btn-Run" class="mode-btn py-3 px-2 rounded-xl flex flex-col items-center gap-1 transition-all duration-200 bg-lime-400 text-slate-950 font-extrabold shadow-lg shadow-lime-400/25">
+                                <span class="text-lg">⚡</span>
+                                <span class="text-xs">Run</span>
+                            </button>
+                            <button onclick="selectActivityMode('Jog')" id="mode-btn-Jog" class="mode-btn py-3 px-2 rounded-xl flex flex-col items-center gap-1 transition-all duration-200 text-slate-500 dark:text-slate-400 hover:bg-white/5 font-bold">
+                                <span class="text-lg">🏃</span>
+                                <span class="text-xs">Jog</span>
+                            </button>
+                            <button onclick="selectActivityMode('Walk')" id="mode-btn-Walk" class="mode-btn py-3 px-2 rounded-xl flex flex-col items-center gap-1 transition-all duration-200 text-slate-500 dark:text-slate-400 hover:bg-white/5 font-bold">
+                                <span class="text-lg">🚶</span>
+                                <span class="text-xs">Walk</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Target Pills -->
+                    <div class="mb-4">
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Target Sesi Ini</label>
+                        <div class="grid grid-cols-4 gap-2">
+                            <button onclick="selectTarget('Bebas', this)" class="target-pill py-2 rounded-xl text-xs font-bold bg-lime-400/15 border border-lime-400 text-lime-500 dark:text-lime-400 transition">Bebas</button>
+                            <button onclick="selectTarget('3 km', this)" class="target-pill py-2 rounded-xl text-xs font-bold glass-panel text-slate-400 hover:text-white transition">3 km</button>
+                            <button onclick="selectTarget('5 km', this)" class="target-pill py-2 rounded-xl text-xs font-bold glass-panel text-slate-400 hover:text-white transition">5 km</button>
+                            <button onclick="selectTarget('30 mnt', this)" class="target-pill py-2 rounded-xl text-xs font-bold glass-panel text-slate-400 hover:text-white transition">30 mnt</button>
+                        </div>
+                    </div>
+
+                    <!-- Standout Features Toggles -->
+                    <div class="space-y-2.5">
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Fitur Fokus & Tantangan</label>
+                        
+                        <!-- Ghost Runner Toggle -->
+                        <div onclick="toggleFeature('ghost')" class="cursor-pointer glass-panel p-3.5 rounded-2xl flex items-center justify-between transition hover:border-cyan-400/40 active:scale-[0.99]">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-cyan-400/15 text-cyan-400 flex items-center justify-center text-lg border border-cyan-400/20">
+                                    👻
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold flex items-center gap-1.5">
+                                        Ghost Runner
+                                        <span class="text-[10px] font-mono font-bold bg-cyan-400/15 text-cyan-500 dark:text-cyan-400 px-1.5 py-0.5 rounded">PB 05:25</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Balapan real-time lawan bayangan rekor</p>
+                                </div>
+                            </div>
+                            <div id="toggle-ghost-bg" class="w-11 h-6 bg-lime-400 rounded-full p-0.5 transition-colors duration-200 flex items-center">
+                                <div id="toggle-ghost-dot" class="w-5 h-5 bg-slate-950 rounded-full shadow transform translate-x-5 transition-transform duration-200"></div>
+                            </div>
+                        </div>
+
+                        <!-- Mindful Mode Toggle -->
+                        <div onclick="toggleFeature('mindful')" class="cursor-pointer glass-panel p-3.5 rounded-2xl flex items-center justify-between transition hover:border-rose-400/40 active:scale-[0.99]">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-rose-400/15 text-rose-400 flex items-center justify-center text-lg border border-rose-400/20">
+                                    🧘
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold">Mindful Mode</div>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">Sembunyikan angka agar bebas stres</p>
+                                </div>
+                            </div>
+                            <div id="toggle-mindful-bg" class="w-11 h-6 bg-slate-300 dark:bg-slate-700 rounded-full p-0.5 transition-colors duration-200 flex items-center">
+                                <div id="toggle-mindful-dot" class="w-5 h-5 bg-white rounded-full shadow transform translate-x-0 transition-transform duration-200"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Start Activity CTA Button -->
+                <div class="pt-4">
+                    <button id="btn-start-main" onclick="startActivity()" class="w-full py-4 rounded-3xl bg-lime-400 hover:bg-lime-300 text-slate-950 font-extrabold text-base tracking-wide shadow-xl shadow-lime-400/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <span>Mulai <span id="start-btn-mode">Run</span> (GPS + Simulasi)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ====================================================== -->
+            <!-- VIEW 2: LIVE TRACKER REAL-TIME                         -->
+            <!-- ====================================================== -->
+            <div id="view-live" class="hidden flex-1 flex-col justify-between px-5 pt-2 pb-6 z-20">
+                <div>
+                    <!-- Top Live Status & Demo Speed Button -->
+                    <div class="flex items-center justify-between mb-2.5">
+                        <div class="flex items-center gap-2">
+                            <span class="relative flex h-2.5 w-2.5">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-lime-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-lime-400"></span>
+                            </span>
+                            <span id="live-mode-badge" class="text-xs font-extrabold uppercase tracking-widest text-lime-400">LIVE • RUN</span>
+                            <span id="gps-signal-pill" class="text-[9px] font-mono bg-white/10 px-2 py-0.5 rounded-full text-slate-300">GPS + Sim</span>
+                        </div>
+                        <button onclick="boostLiveSimulation()" class="text-[11px] font-bold bg-white/10 hover:bg-lime-400 hover:text-slate-950 text-slate-200 px-3 py-1 rounded-full border border-white/15 transition active:scale-95 flex items-center gap-1">
+                            <span>⏩ +0.5 km</span>
+                        </button>
+                    </div>
+
+                    <!-- Ghost Runner Real-Time Distance Indicator -->
+                    <div id="live-ghost-banner" class="mb-2.5 glass-panel rounded-2xl px-3.5 py-2 border-cyan-400/30 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">👻</span>
+                            <span class="text-xs font-bold text-cyan-400">Ghost PB</span>
+                        </div>
+                        <span id="ghost-status-text" class="text-xs font-extrabold font-mono tabular-nums text-lime-400">+12m di depan bayanganmu</span>
+                    </div>
+
+                    <!-- REAL-TIME LIVE FOG OF WAR MINI-MAP WITH STREETS & LANDMARKS -->
+                    <div class="relative w-full h-44 rounded-3xl overflow-hidden border border-white/15 bg-[#060911] shadow-2xl">
+                        <canvas id="live-fog-canvas" class="w-full h-full block"></canvas>
+                        <!-- Live Street Name HUD -->
+                        <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+                            <div class="bg-slate-950/85 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-200 border border-white/10 flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 rounded-full bg-lime-400"></span>
+                                <span id="live-current-street">Jl. Ahmad Yani</span>
+                            </div>
+                            <div class="bg-slate-950/85 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-mono font-bold text-cyan-400 border border-white/10">
+                                Kabut Terbuka
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Center Metrics: Standard vs Mindful Mode -->
+                <div class="my-auto py-2">
+                    <!-- Standard Sports Metrics -->
+                    <div id="live-metrics-standard" class="text-center space-y-3">
+                        <div>
+                            <div class="text-[11px] font-bold uppercase tracking-widest text-slate-400">Jarak Tempuh</div>
+                            <div class="text-6xl font-extrabold font-mono tabular-nums tracking-tighter text-slate-900 dark:text-white leading-none mt-1">
+                                <span id="live-distance">0.00</span><span class="text-xl font-bold text-lime-500 dark:text-lime-400 ml-1">km</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 glass-panel p-3.5 rounded-3xl">
+                            <div>
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Durasi</div>
+                                <div id="live-duration" class="text-2xl font-extrabold font-mono tabular-nums mt-0.5">00:00</div>
+                            </div>
+                            <div class="border-l border-slate-200/20 dark:border-white/10">
+                                <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Pace Rata-Rata</div>
+                                <div class="text-2xl font-extrabold font-mono tabular-nums mt-0.5"><span id="live-pace">05:18</span><span class="text-xs text-slate-400 font-normal">/km</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mindful Mode Calm Breathing View -->
+                    <div id="live-metrics-mindful" class="hidden flex-col items-center justify-center text-center py-1">
+                        <div class="relative w-32 h-32 flex items-center justify-center mb-2">
+                            <div class="absolute inset-0 rounded-full bg-lime-400/20 animate-breathe"></div>
+                            <div class="absolute inset-4 rounded-full bg-cyan-400/20 animate-breathe" style="animation-delay: 1.2s;"></div>
+                            <div class="relative px-4 py-4 rounded-full bg-gradient-to-tr from-lime-400 to-cyan-400 flex items-center justify-center shadow-lg text-slate-950 font-extrabold text-xs">
+                                Fokus
+                            </div>
+                        </div>
+                        <p class="text-xs font-semibold text-slate-600 dark:text-slate-300">Angka disembunyikan. Nikmati ritme langkahmu.</p>
+                        <button onclick="peekMindfulNumbers()" class="mt-2 text-xs font-bold text-lime-500 dark:text-lime-400 bg-lime-400/10 border border-lime-400/25 px-3.5 py-1.5 rounded-full hover:bg-lime-400/20 transition">
+                            👁️ Intip Angka (3 dtk)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pause & Finish Controls -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="togglePauseActivity()" id="btn-pause" class="py-4 rounded-3xl glass-panel hover:bg-white/10 font-bold text-sm flex items-center justify-center gap-2 transition active:scale-95">
+                        <span id="pause-icon">⏸️</span>
+                        <span id="pause-text">Jeda</span>
+                    </button>
+                    <button onclick="finishActivity()" class="py-4 rounded-3xl bg-rose-500 hover:bg-rose-400 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose-500/30 transition active:scale-95">
+                        <span>🏁</span>
+                        <span>Selesai</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ====================================================== -->
+            <!-- VIEW 3: SUMMARY & AUTO-STORY PNG GENERATOR             -->
+            <!-- ====================================================== -->
+            <div id="view-summary" class="hidden flex-1 overflow-y-auto no-scrollbar px-5 pt-2 pb-6 flex-col justify-between z-20">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-lg font-extrabold">Aktivitas Selesai! 🎉</h2>
+                        <span id="summary-fog-gain" class="text-[11px] font-bold text-lime-500 dark:text-lime-400 bg-lime-400/10 border border-lime-400/20 px-2.5 py-1 rounded-full">+2.1% Wilayah</span>
+                    </div>
+
+                    <!-- Mood Selector -->
+                    <div class="mb-3.5">
+                        <label class="block text-[11px] font-bold text-slate-400 mb-2">Perasaanmu setelah sesi ini?</label>
+                        <div class="grid grid-cols-4 gap-2">
+                            <button onclick="selectMood('😄', 'Segar', this)" class="mood-btn bg-lime-400/15 border-2 border-lime-400 rounded-2xl py-2 flex flex-col items-center gap-0.5 transition">
+                                <span class="text-xl">😄</span>
+                                <span class="text-[10px] font-bold">Segar</span>
+                            </button>
+                            <button onclick="selectMood('🔥', 'On Fire', this)" class="mood-btn glass-panel rounded-2xl py-2 flex flex-col items-center gap-0.5 transition">
+                                <span class="text-xl">🔥</span>
+                                <span class="text-[10px] font-bold">On Fire</span>
+                            </button>
+                            <button onclick="selectMood('😌', 'Tenang', this)" class="mood-btn glass-panel rounded-2xl py-2 flex flex-col items-center gap-0.5 transition">
+                                <span class="text-xl">😌</span>
+                                <span class="text-[10px] font-bold">Tenang</span>
+                            </button>
+                            <button onclick="selectMood('🥵', 'Lelah', this)" class="mood-btn glass-panel rounded-2xl py-2 flex flex-col items-center gap-0.5 transition">
+                                <span class="text-xl">🥵</span>
+                                <span class="text-[10px] font-bold">Lelah</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Auto-Story Sticker Generator -->
+                    <div class="mb-3">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Auto-Story Sticker</span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="setStoryTheme('obsidian')" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-900 text-white border border-white/20">Obsidian</button>
+                                <button onclick="setStoryTheme('frosted')" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/80 text-slate-900 border border-slate-300">Frosted</button>
+                                <button onclick="setStoryTheme('neon')" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-lime-400 text-slate-950">Neon</button>
+                            </div>
+                        </div>
+
+                        <div class="checkerboard-bg p-3 rounded-3xl border border-white/10 flex items-center justify-center">
+                            <div id="story-card" class="w-full rounded-2xl p-4 bg-[#070A11]/92 text-white backdrop-blur-xl border border-white/15 shadow-2xl transition-all duration-300">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-xs font-extrabold tracking-tight flex items-center gap-1">
+                                        Jejak<span class="w-1.5 h-1.5 rounded-full bg-lime-400"></span>
+                                    </span>
+                                    <span id="story-badge" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-white/10">RUN • 😄</span>
+                                </div>
+                                <div id="story-area-name" class="text-[10px] opacity-75 font-medium mb-1">📍 Jl. Ahmad Yani → Taman Kota</div>
+
+                                <!-- Route SVG -->
+                                <div class="my-1.5 flex justify-center">
+                                    <svg class="w-44 h-20 overflow-visible" viewBox="0 0 160 80">
+                                        <path id="story-route-path" d="M 15 65 Q 35 15, 65 40 T 115 25 T 145 55" fill="none" stroke="#A3E635" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <circle cx="15" cy="65" r="4" fill="#A3E635"/>
+                                        <circle cx="145" cy="55" r="4.5" fill="#FFFFFF" stroke="#A3E635" stroke-width="2"/>
+                                    </svg>
+                                </div>
+
+                                <div class="grid grid-cols-3 gap-2 pt-2 border-t border-current/10 text-center">
+                                    <div>
+                                        <div class="text-base font-extrabold font-mono tabular-nums" id="story-km">3.25 km</div>
+                                        <div class="text-[9px] opacity-70 uppercase">Jarak</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-base font-extrabold font-mono tabular-nums" id="story-time">17:20</div>
+                                        <div class="text-[9px] opacity-70 uppercase">Waktu</div>
+                                    </div>
+                                    <div>
+                                        <div class="text-base font-extrabold font-mono tabular-nums" id="story-pace">05:20</div>
+                                        <div class="text-[9px] opacity-70 uppercase">Pace</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Actions (PNG Export + Save to LocalStorage) -->
+                <div class="grid grid-cols-2 gap-2.5 pt-2">
+                    <button onclick="downloadStoryPNG()" class="py-3.5 rounded-2xl glass-panel hover:bg-white/10 font-bold text-xs flex items-center justify-center gap-1.5 transition active:scale-95">
+                        <span>🖼️</span>
+                        <span>Unduh PNG Story</span>
+                    </button>
+                    <button onclick="saveRunToHistory()" class="py-3.5 rounded-2xl bg-lime-400 hover:bg-lime-300 text-slate-950 font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-lime-400/25 transition active:scale-95">
+                        <span>💾</span>
+                        <span>Simpan Permanen</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ====================================================== -->
+            <!-- VIEW 4: PETA KABUT REAL-TIME (FOG OF WAR CITY MAP)     -->
+            <!-- ====================================================== -->
+            <div id="view-fog" class="hidden flex-1 flex-col px-5 pt-2 pb-24 overflow-y-auto no-scrollbar">
+                <!-- HUD Header -->
+                <div class="flex items-center justify-between mb-2.5">
+                    <div>
+                        <h2 class="text-lg font-extrabold flex items-center gap-1.5">
+                            Peta Kabut Kota
+                            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        </h2>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Tersimpan otomatis di memori MatePad</p>
+                    </div>
+                    <div class="text-right glass-panel px-3 py-1.5 rounded-2xl">
+                        <div id="fog-percentage-text" class="text-base font-extrabold font-mono tabular-nums text-lime-500 dark:text-lime-400">38.4%</div>
+                        <div class="text-[9px] uppercase font-bold text-slate-400">Wilayah Terbuka</div>
+                    </div>
+                </div>
+
+                <!-- Interactive Real-Time City Vector + Fog of War Canvas -->
+                <div class="relative w-full h-[385px] rounded-3xl overflow-hidden border border-white/15 bg-[#060911] shadow-2xl mb-3">
+                    <canvas id="explorer-fog-canvas" class="w-full h-full block cursor-crosshair touch-none"></canvas>
+
+                    <!-- Top Map HUD Pill -->
+                    <div class="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-none">
+                        <div class="bg-slate-950/85 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold text-slate-200 border border-white/10 flex items-center gap-1.5 truncate">
+                            <span class="text-lime-400">📍</span>
+                            <span id="map-hud-location">Jl. Ahmad Yani • Bekasi</span>
+                        </div>
+                        <div class="bg-slate-950/85 backdrop-blur-md px-2.5 py-1.5 rounded-full text-[10px] font-mono font-bold text-cyan-400 border border-white/10 shrink-0">
+                            <span id="hud-landmarks-count">4/7</span> Landmark
+                        </div>
+                    </div>
+
+                    <!-- Bottom Interactive Controls inside Map -->
+                    <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
+                        <button onclick="useRealGPSLocation()" class="flex-1 bg-slate-950/90 hover:bg-slate-900 backdrop-blur-md text-white border border-white/15 py-2.5 px-3 rounded-2xl text-[11px] font-bold flex items-center justify-center gap-1.5 shadow-lg transition active:scale-95">
+                            <span class="text-cyan-400">🎯</span>
+                            <span>Lokasi Saya (GPS)</span>
+                        </button>
+                        <button id="btn-sim-walk" onclick="toggleMapAutoWalk()" class="flex-1 bg-lime-400 hover:bg-lime-300 text-slate-950 py-2.5 px-3 rounded-2xl text-[11px] font-extrabold flex items-center justify-center gap-1.5 shadow-lg shadow-lime-400/25 transition active:scale-95">
+                            <span id="sim-walk-icon">🚶</span>
+                            <span id="sim-walk-label">Simulasi Jalan</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Discovered Streets & Landmarks Legend Card -->
+                <div class="glass-panel p-3.5 rounded-2xl flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-lime-400/15 text-lime-500 dark:text-lime-400 flex items-center justify-center text-lg border border-lime-400/20">🧭</div>
+                        <div>
+                            <div class="text-xs font-bold" id="discovered-landmark-title">Stadion Patriot & Taman Kota</div>
+                            <div class="text-[11px] text-slate-500 dark:text-slate-400">Usap peta atau pakai GPS untuk membuka jalan baru</div>
+                        </div>
+                    </div>
+                    <button onclick="resetFogDemo()" class="text-[10px] font-bold text-slate-400 hover:text-white px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10">Reset</button>
+                </div>
+            </div>
+
+            <!-- ====================================================== -->
+            <!-- VIEW 5: RIWAYAT (HISTORY)                              -->
+            <!-- ====================================================== -->
+            <div id="view-history" class="hidden flex-1 flex-col px-5 pt-2 pb-24 overflow-y-auto no-scrollbar">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h2 class="text-lg font-extrabold">Riwayat Jejak</h2>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Ketuk kartu untuk unduh stiker Auto-Story PNG</p>
+                    </div>
+                    <span id="history-count-badge" class="text-xs font-bold glass-panel px-3 py-1 rounded-full">4 Sesi</span>
+                </div>
+
+                <div id="history-list" class="space-y-3">
+                    <!-- Populated via JS & LocalStorage -->
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- BOTTOM NAVIGATION BAR                                      -->
+        <!-- ========================================================== -->
+        <div id="bottom-nav" class="absolute bottom-0 left-0 right-0 bg-white/90 dark:bg-[#090D16]/90 backdrop-blur-xl border-t border-slate-200/80 dark:border-white/10 px-6 py-2.5 flex items-center justify-around z-30">
+            <button onclick="switchTab('home')" id="nav-home" class="nav-item flex flex-col items-center gap-1 text-lime-500 dark:text-lime-400 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span class="text-[10px] font-extrabold">Lari</span>
+            </button>
+            <button onclick="switchTab('fog')" id="nav-fog" class="nav-item flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                <span class="text-[10px] font-bold">Peta Kabut</span>
+            </button>
+            <button onclick="switchTab('history')" id="nav-history" class="nav-item flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span class="text-[10px] font-bold">Riwayat</span>
+            </button>
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- MODAL: HISTORY AUTO-STORY VIEWER                           -->
+        <!-- ========================================================== -->
+        <div id="history-modal" class="hidden absolute inset-0 z-40 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-5">
+            <div class="w-full glass-panel rounded-3xl p-5 shadow-2xl">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-extrabold uppercase tracking-wider text-lime-400">Kartu Kenangan</span>
+                    <button onclick="closeHistoryModal()" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs font-bold">✕</button>
+                </div>
+                
+                <div class="checkerboard-bg p-3 rounded-2xl mb-4">
+                    <div class="w-full rounded-2xl p-4 bg-[#070A11] text-white border border-white/15">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs font-extrabold">Jejak<span class="text-lime-400">.</span></span>
+                            <span id="modal-badge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/10">RUN • 😄</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 mb-1" id="modal-date">15 Nov 2026 • Jl. Ahmad Yani</div>
+                        <svg class="w-full h-16 my-1" viewBox="0 0 160 70">
+                            <path id="modal-route-path" d="M 10 55 C 40 10, 70 65, 105 25 S 140 45, 150 20" fill="none" stroke="#A3E635" stroke-width="3.5" stroke-linecap="round"/>
+                        </svg>
+                        <div class="grid grid-cols-3 gap-2 pt-2 border-t border-white/10 text-center">
+                            <div>
+                                <div class="text-sm font-extrabold font-mono tabular-nums" id="modal-km">5.20 km</div>
+                                <div class="text-[9px] text-slate-400">JARAK</div>
+                            </div>
+                            <div>
+                                <div class="text-sm font-extrabold font-mono tabular-nums" id="modal-time">28:36</div>
+                                <div class="text-[9px] text-slate-400">WAKTU</div>
+                            </div>
+                            <div>
+                                <div class="text-sm font-extrabold font-mono tabular-nums" id="modal-pace">05:30</div>
+                                <div class="text-[9px] text-slate-400">PACE</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="downloadModalStoryPNG(); closeHistoryModal();" class="w-full py-3.5 rounded-2xl bg-lime-400 text-slate-950 font-extrabold text-xs">
+                    🖼️ Unduh Gambar Stiker PNG
+                </button>
+            </div>
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- MODAL: PANDUAN INSTALL PWA DI HUAWEI MATEPAD               -->
+        <!-- ========================================================== -->
+        <div id="install-modal" class="hidden absolute inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-5">
+            <div class="w-full glass-panel rounded-3xl p-5 shadow-2xl border border-lime-400/30">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">📲</span>
+                        <span class="text-sm font-extrabold text-lime-400">Pasang di Layar Utama MatePad</span>
+                    </div>
+                    <button onclick="closeInstallModal()" class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-xs font-bold">✕</button>
+                </div>
+
+                <p class="text-xs text-slate-300 leading-relaxed mb-3">
+                    Aplikasi <strong>Jejak PWA</strong> sudah siap diinstal langsung ke Huawei MatePad tanpa Play Store dan tanpa komputer:
+                </p>
+
+                <div class="space-y-2.5 text-xs bg-slate-900/80 p-3.5 rounded-2xl border border-white/10 mb-4">
+                    <div class="flex items-start gap-2.5">
+                        <span class="w-5 h-5 rounded-full bg-lime-400 text-slate-950 font-extrabold flex items-center justify-center shrink-0 text-[11px]">1</span>
+                        <span class="text-slate-200">Ketuk ikon <strong>Menu (⋮ atau ≡)</strong> di pojok browser Huawei / Chrome kamu.</span>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                        <span class="w-5 h-5 rounded-full bg-lime-400 text-slate-950 font-extrabold flex items-center justify-center shrink-0 text-[11px]">2</span>
+                        <span class="text-slate-200">Pilih <strong>"Tambahkan ke Layar Utama"</strong> (<em>Add to Home Screen</em>) atau <strong>"Instal Aplikasi"</strong>.</span>
+                    </div>
+                    <div class="flex items-start gap-2.5">
+                        <span class="w-5 h-5 rounded-full bg-lime-400 text-slate-950 font-extrabold flex items-center justify-center shrink-0 text-[11px]">3</span>
+                        <span class="text-slate-200">Buka ikon <strong>Jejak</strong> dari layar utama MatePad untuk tampilan layar penuh & simpan otomatis!</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="btn-native-install-trigger" onclick="triggerNativeInstall()" class="hidden flex-1 py-3 rounded-2xl bg-lime-400 text-slate-950 font-extrabold text-xs">
+                        ⚡ Instal Sekarang
+                    </button>
+                    <button onclick="closeInstallModal()" class="flex-1 py-3 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs">
+                        Mengerti
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================================
+        // 1. EMBEDDED PWA MANIFEST & INLINE SERVICE WORKER (ALL-IN-ONE)
+        // ==========================================================
+        (function setupEmbeddedPWA() {
+            const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#070A11"/><path d="M130 370 Q 190 150, 260 270 T 385 155" fill="none" stroke="#A3E635" stroke-width="38" stroke-linecap="round"/><circle cx="385" cy="155" r="24" fill="#22D3EE"/></svg>`;
+            const iconUrl = 'data:image/svg+xml;base64,' + btoa(svgIcon);
+
+            const manifestObj = {
+                name: 'Jejak — Running Tracker & City Explorer',
+                short_name: 'Jejak',
+                description: 'Aplikasi lari minimalis dengan Peta Kabut Kota, Ghost Runner & Auto-Story.',
+                start_url: window.location.href,
+                display: 'standalone',
+                orientation: 'portrait',
+                background_color: '#070A11',
+                theme_color: '#070A11',
+                icons: [
+                    { src: iconUrl, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+                    { src: iconUrl, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+                ]
+            };
+
+            const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
+            const manifestURL = URL.createObjectURL(manifestBlob);
+            const linkEl = document.getElementById('pwa-manifest-link');
+            if (linkEl) linkEl.setAttribute('href', manifestURL);
+
+            // Register inline Service Worker via Blob URL if supported over HTTPS/localhost
+            if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+                const swCode = `
+                    const CACHE_NAME = 'jejak-pwa-v1';
+                    self.addEventListener('install', (e) => {
+                        self.skipWaiting();
+                    });
+                    self.addEventListener('activate', (e) => {
+                        e.waitUntil(clients.claim());
+                    });
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(
+                            fetch(e.request).catch(() => caches.match(e.request))
+                        );
+                    });
+                `;
+                try {
+                    const swBlob = new Blob([swCode], { type: 'application/javascript' });
+                    const swUrl = URL.createObjectURL(swBlob);
+                    navigator.serviceWorker.register(swUrl).catch(() => {});
+                } catch (err) {}
+            }
+        })();
+
+        // Capture native beforeinstallprompt when browser supports 1-click install
+        let deferredInstallPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            const nativeBtn = document.getElementById('btn-native-install-trigger');
+            if (nativeBtn) nativeBtn.classList.remove('hidden');
+        });
+
+        function openInstallModal() {
+            document.getElementById('install-modal').classList.remove('hidden');
+        }
+        function closeInstallModal() {
+            document.getElementById('install-modal').classList.add('hidden');
+        }
+        async function triggerNativeInstall() {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            if (outcome === 'accepted') {
+                showToast('🎉', 'Jejak PWA sedang dipasang ke layar utama!');
+                closeInstallModal();
+            }
+            deferredInstallPrompt = null;
+        }
+
+        // ==========================================================
+        // 2. CITY MAP DATA (BEKASI STREETS, PARKS, RIVER, LANDMARKS)
+        // ==========================================================
+        const STORAGE_KEYS = {
+            HISTORY: 'jejak_pwa_history_v1',
+            FOG_POINTS: 'jejak_pwa_fog_points_v1',
+            FOG_PCT: 'jejak_pwa_fog_pct_v1',
+            DISCOVERED_LM: 'jejak_pwa_landmarks_v1'
+        };
+
+        const CITY_DATA = {
+            river: [
+                { x: 0.72, y: 0.0 },
+                { x: 0.68, y: 0.28 },
+                { x: 0.76, y: 0.58 },
+                { x: 0.70, y: 1.0 }
+            ],
+            parks: [
+                { name: 'Taman Kota Bekasi', x: 0.14, y: 0.24, w: 0.24, h: 0.18, color: 'rgba(16, 185, 129, 0.18)' },
+                { name: 'Hutan Kota Patriot', x: 0.44, y: 0.56, w: 0.20, h: 0.16, color: 'rgba(16, 185, 129, 0.16)' }
+            ],
+            roads: [
+                { name: 'Jl. Ahmad Yani', major: true, pts: [{x: 0.42, y: 0.0}, {x: 0.42, y: 1.0}], labelPos: {x: 0.42, y: 0.46, angle: -Math.PI/2} },
+                { name: 'Jl. KH. Noer Ali', major: true, pts: [{x: 0.0, y: 0.48}, {x: 1.0, y: 0.48}], labelPos: {x: 0.22, y: 0.48, angle: 0} },
+                { name: 'Jl. Sudirman', major: true, pts: [{x: 0.0, y: 0.18}, {x: 1.0, y: 0.20}], labelPos: {x: 0.62, y: 0.19, angle: 0} },
+                { name: 'Jl. Kemakmuran', major: false, pts: [{x: 0.14, y: 0.0}, {x: 0.14, y: 1.0}], labelPos: {x: 0.14, y: 0.72, angle: -Math.PI/2} },
+                { name: 'Jl. Veteran', major: false, pts: [{x: 0.0, y: 0.78}, {x: 0.72, y: 0.78}], labelPos: {x: 0.28, y: 0.78, angle: 0} },
+                { name: 'Jl. Kartini', major: false, pts: [{x: 0.86, y: 0.0}, {x: 0.86, y: 1.0}], labelPos: {x: 0.86, y: 0.65, angle: -Math.PI/2} }
+            ],
+            landmarks: [
+                { id: 'stadion', name: 'Stadion Patriot', icon: '🏟️', x: 0.30, y: 0.34, discovered: true },
+                { id: 'taman', name: 'Taman Kota', icon: '🌳', x: 0.24, y: 0.28, discovered: true },
+                { id: 'stasiun', name: 'Stasiun Bekasi', icon: '🚆', x: 0.56, y: 0.14, discovered: true },
+                { id: 'danau', name: 'Danau Summarecon', icon: '🌊', x: 0.58, y: 0.64, discovered: true },
+                { id: 'kafe', name: 'Kopi Tepi Kali', icon: '☕', x: 0.72, y: 0.42, discovered: false },
+                { id: 'alun', name: 'Alun-Alun Kota', icon: '🏛️', x: 0.26, y: 0.84, discovered: false },
+                { id: 'boulevard', name: 'Boulevard Timur', icon: '🏙️', x: 0.88, y: 0.28, discovered: false }
+            ],
+            simRoute: [
+                { x: 0.42, y: 0.85, street: 'Jl. Ahmad Yani' },
+                { x: 0.42, y: 0.65, street: 'Jl. Ahmad Yani' },
+                { x: 0.42, y: 0.48, street: 'Simpang Jl. KH. Noer Ali' },
+                { x: 0.60, y: 0.48, street: 'Jl. KH. Noer Ali' },
+                { x: 0.72, y: 0.48, street: 'Jembatan Kali Bekasi' },
+                { x: 0.86, y: 0.48, street: 'Jl. Kartini' },
+                { x: 0.86, y: 0.28, street: 'Boulevard Timur' },
+                { x: 0.86, y: 0.19, street: 'Jl. Sudirman' },
+                { x: 0.60, y: 0.19, street: 'Jl. Sudirman • Stasiun' },
+                { x: 0.42, y: 0.18, street: 'Jl. Ahmad Yani Utara' },
+                { x: 0.24, y: 0.18, street: 'Taman Kota Bekasi' },
+                { x: 0.14, y: 0.34, street: 'Jl. Kemakmuran' },
+                { x: 0.14, y: 0.60, street: 'Jl. Kemakmuran Selatan' },
+                { x: 0.14, y: 0.78, street: 'Jl. Veteran' },
+                { x: 0.30, y: 0.78, street: 'Alun-Alun Kota' }
+            ]
+        };
+
+        const DEFAULT_HISTORY = [
+            {
+                id: 1,
+                mode: 'Run',
+                area: 'Jl. Ahmad Yani → Stadion Patriot',
+                date: '15 Nov 2026 • 06:15',
+                km: 5.20,
+                duration: '28:36',
+                pace: '05:30',
+                mood: '🔥',
+                path: 'M 10 55 C 40 10, 70 65, 105 25 S 140 45, 150 20'
+            },
+            {
+                id: 2,
+                mode: 'Jog',
+                area: 'Taman Kota → Jl. KH. Noer Ali',
+                date: '13 Nov 2026 • 17:10',
+                km: 3.50,
+                duration: '22:45',
+                pace: '06:30',
+                mood: '😌',
+                path: 'M 15 20 Q 55 65, 85 30 T 145 50'
+            },
+            {
+                id: 3,
+                mode: 'Walk',
+                area: 'Danau Summarecon Loop',
+                date: '11 Nov 2026 • 07:00',
+                km: 4.10,
+                duration: '45:10',
+                pace: '11:01',
+                mood: '😄',
+                path: 'M 20 60 L 50 20 L 100 25 L 135 55'
+            },
+            {
+                id: 4,
+                mode: 'Run',
+                area: 'Jl. Sudirman Sprint',
+                date: '09 Nov 2026 • 06:00',
+                km: 2.00,
+                duration: '10:40',
+                pace: '05:20',
+                mood: '🥵',
+                path: 'M 15 45 Q 80 5, 145 45'
+            }
+        ];
+
+        // ==========================================================
+        // 3. APPLICATION STATE & LOCALSTORAGE PERSISTENCE
+        // ==========================================================
+        const state = {
+            currentTab: 'home',
+            mode: 'Run',
+            targetLabel: 'Bebas',
+            ghostEnabled: true,
+            mindfulEnabled: false,
+            isRunning: false,
+            isPaused: false,
+            secondsElapsed: 0,
+            distanceKm: 0.0,
+            liveRouteIdx: 0,
+            liveRouteSubProgress: 0,
+            timerInterval: null,
+            geoWatchId: null,
+            lastRealCoords: null,
+            selectedMood: { emoji: '😄', label: 'Segar' },
+            storyTheme: 'obsidian',
+            fogPercent: 38.4,
+            exploredPoints: [],
+            mapAutoWalkActive: false,
+            mapAutoWalkInterval: null,
+            explorerRouteIdx: 4,
+            playerPos: { x: 0.72, y: 0.48 },
+            history: [],
+            activeModalItem: null
+        };
+
+        function loadPersistedState() {
+            try {
+                const savedHistory = localStorage.getItem(STORAGE_KEYS.HISTORY);
+                state.history = savedHistory ? JSON.parse(savedHistory) : [...DEFAULT_HISTORY];
+
+                const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
+                if (savedFogPct) state.fogPercent = parseFloat(savedFogPct);
+
+                const savedFogPts = localStorage.getItem(STORAGE_KEYS.FOG_POINTS);
+                if (savedFogPts) state.exploredPoints = JSON.parse(savedFogPts);
+
+                const savedLandmarks = localStorage.getItem(STORAGE_KEYS.DISCOVERED_LM);
+                if (savedLandmarks) {
+                    const ids = JSON.parse(savedLandmarks);
+                    CITY_DATA.landmarks.forEach(lm => {
+                        if (ids.includes(lm.id)) lm.discovered = true;
+                    });
+                }
+            } catch (e) {
+                state.history = [...DEFAULT_HISTORY];
+            }
+            updateWeeklyStatsUI();
+        }
+
+        function savePersistedState() {
+            try {
+                localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(state.history));
+                localStorage.setItem(STORAGE_KEYS.FOG_PCT, String(state.fogPercent));
+                // Keep last 400 fog clear coordinates to stay lightweight
+                if (state.exploredPoints.length > 400) {
+                    state.exploredPoints = state.exploredPoints.slice(-400);
+                }
+                localStorage.setItem(STORAGE_KEYS.FOG_POINTS, JSON.stringify(state.exploredPoints));
+                const discoveredIds = CITY_DATA.landmarks.filter(l => l.discovered).map(l => l.id);
+                localStorage.setItem(STORAGE_KEYS.DISCOVERED_LM, JSON.stringify(discoveredIds));
+            } catch (e) {}
+        }
+
+        function updateWeeklyStatsUI() {
+            const totalKm = state.history.reduce((s, r) => s + r.km, 0);
+            document.getElementById('stat-weekly-km').textContent = totalKm.toFixed(1);
+            document.getElementById('stat-weekly-runs').textContent = `• ${state.history.length} Sesi`;
+
+            const pct = Math.min(100, Math.round((totalKm / 20) * 100));
+            document.getElementById('weekly-ring-pct').textContent = `${pct}%`;
+            const offset = 163.36 - (163.36 * pct) / 100;
+            document.getElementById('weekly-progress-ring').setAttribute('stroke-dashoffset', offset);
+
+            document.getElementById('weekly-fog-badge').textContent = `🗺️ ${state.fogPercent}% Kota Terbuka`;
+            document.getElementById('fog-percentage-text').textContent = `${state.fogPercent}%`;
+        }
+
+        // Haversine GPS distance in km
+        function haversineKm(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLon / 2) ** 2;
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+        }
+
+        // Mode Theme Configurations (Electric Lime, Cyan, Coral)
+        const MODE_THEMES = {
+            Run: {
+                accentHex: '#A3E635',
+                btnClass: 'bg-lime-400 text-slate-950 font-extrabold shadow-lg shadow-lime-400/25',
+                ctaClass: 'bg-lime-400 hover:bg-lime-300 text-slate-950 shadow-lime-400/25',
+                glowClass: 'bg-lime-400/15',
+                textClass: 'text-lime-500 dark:text-lime-400',
+                dotClass: 'bg-lime-400',
+                paceHint: 'Target Pace ~05:15/km'
+            },
+            Jog: {
+                accentHex: '#22D3EE',
+                btnClass: 'bg-cyan-400 text-slate-950 font-extrabold shadow-lg shadow-cyan-400/25',
+                ctaClass: 'bg-cyan-400 hover:bg-cyan-300 text-slate-950 shadow-cyan-400/25',
+                glowClass: 'bg-cyan-400/15',
+                textClass: 'text-cyan-500 dark:text-cyan-400',
+                dotClass: 'bg-cyan-400',
+                paceHint: 'Target Pace ~06:30/km'
+            },
+            Walk: {
+                accentHex: '#FB7185',
+                btnClass: 'bg-rose-400 text-slate-950 font-extrabold shadow-lg shadow-rose-400/25',
+                ctaClass: 'bg-rose-400 hover:bg-rose-300 text-slate-950 shadow-rose-400/25',
+                glowClass: 'bg-rose-400/15',
+                textClass: 'text-rose-500 dark:text-rose-400',
+                dotClass: 'bg-rose-400',
+                paceHint: 'Target Pace ~10:30/km'
+            }
+        };
+
+        // ==========================================================
+        // 4. NAVIGATION & THEME CONTROLS
+        // ==========================================================
+        function switchTab(tabName) {
+            state.currentTab = tabName;
+            ['home', 'fog', 'history'].forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                const nav = document.getElementById(`nav-${v}`);
+                if (v === tabName) {
+                    el.classList.remove('hidden');
+                    el.classList.add('flex');
+                    nav.classList.remove('text-slate-400');
+                    nav.classList.add('text-lime-500', 'dark:text-lime-400');
+                } else {
+                    el.classList.add('hidden');
+                    el.classList.remove('flex');
+                    nav.classList.add('text-slate-400');
+                    nav.classList.remove('text-lime-500', 'dark:text-lime-400');
+                }
+            });
+
+            if (tabName === 'fog') {
+                setTimeout(initExplorerFogCanvas, 40);
+            } else {
+                stopMapAutoWalk();
+            }
+            if (tabName === 'history') {
+                renderHistoryList();
+            }
+        }
+
+        function toggleAppTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function showToast(icon, message) {
+            const toast = document.getElementById('app-toast');
+            document.getElementById('toast-icon').textContent = icon;
+            document.getElementById('toast-msg').textContent = message;
+            toast.classList.remove('-translate-y-28', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.add('-translate-y-28', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 2800);
+        }
+
+        // ==========================================================
+        // 5. HOME SCREEN CONTROLS
+        // ==========================================================
+        function selectActivityMode(mode) {
+            state.mode = mode;
+            const theme = MODE_THEMES[mode];
+            document.getElementById('start-btn-mode').textContent = mode;
+
+            ['Run', 'Jog', 'Walk'].forEach(m => {
+                const btn = document.getElementById(`mode-btn-${m}`);
+                if (m === mode) {
+                    btn.className = `mode-btn py-3 px-2 rounded-xl flex flex-col items-center gap-1 transition-all duration-200 ${theme.btnClass}`;
+                } else {
+                    btn.className = 'mode-btn py-3 px-2 rounded-xl flex flex-col items-center gap-1 transition-all duration-200 text-slate-500 dark:text-slate-400 hover:bg-white/5 font-bold';
+                }
+            });
+
+            const cta = document.getElementById('btn-start-main');
+            cta.className = `w-full py-4 rounded-3xl ${theme.ctaClass} font-extrabold text-base tracking-wide shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2.5`;
+
+            const glow = document.getElementById('inner-ambient-glow');
+            glow.className = `pointer-events-none absolute -top-24 -right-20 w-64 h-64 rounded-full ${theme.glowClass} blur-3xl transition-colors duration-500`;
+
+            const hint = document.getElementById('mode-pace-hint');
+            hint.textContent = theme.paceHint;
+            hint.className = `text-[11px] font-mono font-semibold ${theme.textClass}`;
+
+            const dot = document.getElementById('brand-dot');
+            dot.className = `w-2 h-2 rounded-full ${theme.dotClass} inline-block mt-1 transition-colors`;
+        }
+
+        function selectTarget(label, btnEl) {
+            state.targetLabel = label;
+            document.querySelectorAll('.target-pill').forEach(btn => {
+                btn.className = 'target-pill py-2 rounded-xl text-xs font-bold glass-panel text-slate-400 hover:text-white transition';
+            });
+            btnEl.className = 'target-pill py-2 rounded-xl text-xs font-bold bg-lime-400/15 border border-lime-400 text-lime-500 dark:text-lime-400 transition';
+        }
+
+        function toggleFeature(feature) {
+            if (feature === 'ghost') {
+                state.ghostEnabled = !state.ghostEnabled;
+                const bg = document.getElementById('toggle-ghost-bg');
+                const dot = document.getElementById('toggle-ghost-dot');
+                bg.classList.toggle('bg-lime-400', state.ghostEnabled);
+                bg.classList.toggle('bg-slate-300', !state.ghostEnabled);
+                bg.classList.toggle('dark:bg-slate-700', !state.ghostEnabled);
+                dot.classList.toggle('translate-x-5', state.ghostEnabled);
+                dot.classList.toggle('translate-x-0', !state.ghostEnabled);
+                dot.classList.toggle('bg-slate-950', state.ghostEnabled);
+                dot.classList.toggle('bg-white', !state.ghostEnabled);
+            } else if (feature === 'mindful') {
+                state.mindfulEnabled = !state.mindfulEnabled;
+                const bg = document.getElementById('toggle-mindful-bg');
+                const dot = document.getElementById('toggle-mindful-dot');
+                bg.classList.toggle('bg-lime-400', state.mindfulEnabled);
+                bg.classList.toggle('bg-slate-300', !state.mindfulEnabled);
+                bg.classList.toggle('dark:bg-slate-700', !state.mindfulEnabled);
+                dot.classList.toggle('translate-x-5', state.mindfulEnabled);
+                dot.classList.toggle('translate-x-0', !state.mindfulEnabled);
+                dot.classList.toggle('bg-slate-950', state.mindfulEnabled);
+                dot.classList.toggle('bg-white', !state.mindfulEnabled);
+            }
+        }
+
+        // ==========================================================
+        // 6. CITY VECTOR MAP RENDERER
+        // ==========================================================
+        function drawCityBaseLayer(ctx, w, h, showLabels = true) {
+            ctx.fillStyle = '#0B101D';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.fillStyle = '#111829';
+            const blockPositions = [
+                [0.18, 0.04, 0.20, 0.11], [0.46, 0.04, 0.20, 0.11],
+                [0.46, 0.24, 0.18, 0.20], [0.18, 0.52, 0.20, 0.22],
+                [0.46, 0.82, 0.20, 0.14], [0.76, 0.52, 0.08, 0.22]
+            ];
+            blockPositions.forEach(([bx, by, bw, bh]) => {
+                ctx.beginPath();
+                ctx.roundRect(bx * w, by * h, bw * w, bh * h, 6);
+                ctx.fill();
+            });
+
+            CITY_DATA.parks.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.roundRect(p.x * w, p.y * h, p.w * w, p.h * h, 12);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(16, 185, 129, 0.35)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                if (showLabels) {
+                    ctx.fillStyle = 'rgba(52, 211, 153, 0.85)';
+                    ctx.font = '600 9px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillText(p.name, (p.x + 0.02) * w, (p.y + p.h * 0.55) * h);
+                }
+            });
+
+            ctx.strokeStyle = 'rgba(34, 211, 238, 0.28)';
+            ctx.lineWidth = 14;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            CITY_DATA.river.forEach((pt, idx) => {
+                if (idx === 0) ctx.moveTo(pt.x * w, pt.y * h);
+                else ctx.lineTo(pt.x * w, pt.y * h);
+            });
+            ctx.stroke();
+
+            CITY_DATA.roads.forEach(road => {
+                ctx.strokeStyle = road.major ? '#26324B' : '#1B2438';
+                ctx.lineWidth = road.major ? 7 : 4.5;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                road.pts.forEach((pt, i) => {
+                    if (i === 0) ctx.moveTo(pt.x * w, pt.y * h);
+                    else ctx.lineTo(pt.x * w, pt.y * h);
+                });
+                ctx.stroke();
+
+                if (road.major) {
+                    ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([4, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+
+                if (showLabels && road.labelPos) {
+                    ctx.save();
+                    ctx.translate(road.labelPos.x * w, road.labelPos.y * h);
+                    ctx.rotate(road.labelPos.angle);
+                    ctx.fillStyle = '#94A3B8';
+                    ctx.font = '700 8.5px "Plus Jakarta Sans", sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(road.name, 0, -5);
+                    ctx.restore();
+                }
+            });
+
+            CITY_DATA.landmarks.forEach(lm => {
+                const lx = lm.x * w;
+                const ly = lm.y * h;
+
+                ctx.fillStyle = lm.discovered ? 'rgba(163, 230, 53, 0.2)' : 'rgba(148, 163, 184, 0.15)';
+                ctx.beginPath();
+                ctx.arc(lx, ly, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.font = '12px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(lm.icon, lx, ly);
+
+                if (showLabels) {
+                    ctx.fillStyle = '#E2E8F0';
+                    ctx.font = '700 8.5px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillText(lm.name, lx, ly + 14);
+                }
+            });
+        }
+
+        // ==========================================================
+        // 7. LIVE TRACKER REAL-TIME GPS + FALLBACK SIMULATOR
+        // ==========================================================
+        let livePathHistory = [];
+
+        function startActivity() {
+            state.isRunning = true;
+            state.isPaused = false;
+            state.secondsElapsed = 0;
+            state.distanceKm = 0.0;
+            state.liveRouteIdx = 0;
+            state.liveRouteSubProgress = 0;
+            state.lastRealCoords = null;
+
+            const startNode = CITY_DATA.simRoute[0];
+            livePathHistory = [{ x: startNode.x, y: startNode.y }];
+
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('bottom-nav').classList.add('hidden');
+            const liveView = document.getElementById('view-live');
+            liveView.classList.remove('hidden');
+            liveView.classList.add('flex');
+
+            const theme = MODE_THEMES[state.mode];
+            const badge = document.getElementById('live-mode-badge');
+            badge.textContent = `LIVE • ${state.mode.toUpperCase()}`;
+            badge.className = `text-xs font-extrabold uppercase tracking-widest ${theme.textClass}`;
+
+            document.getElementById('live-ghost-banner').classList.toggle('hidden', !state.ghostEnabled);
+
+            const stdMetrics = document.getElementById('live-metrics-standard');
+            const mindfulMetrics = document.getElementById('live-metrics-mindful');
+            if (state.mindfulEnabled) {
+                stdMetrics.classList.add('hidden');
+                mindfulMetrics.classList.remove('hidden');
+                mindfulMetrics.classList.add('flex');
+            } else {
+                stdMetrics.classList.remove('hidden');
+                mindfulMetrics.classList.add('hidden');
+                mindfulMetrics.classList.remove('flex');
+            }
+
+            document.getElementById('pause-icon').textContent = '⏸️';
+            document.getElementById('pause-text').textContent = 'Jeda';
+            document.getElementById('live-current-street').textContent = startNode.street;
+
+            // Try Real GPS Watch
+            if ('geolocation' in navigator) {
+                state.geoWatchId = navigator.geolocation.watchPosition(
+                    (pos) => {
+                        if (state.isPaused) return;
+                        const { latitude, longitude } = pos.coords;
+                        document.getElementById('gps-signal-pill').textContent = '🛰️ GPS Terkunci';
+                        if (state.lastRealCoords) {
+                            const deltaKm = haversineKm(state.lastRealCoords.lat, state.lastRealCoords.lng, latitude, longitude);
+                            if (deltaKm > 0.003 && deltaKm < 0.2) {
+                                state.distanceKm += deltaKm;
+                            }
+                        }
+                        state.lastRealCoords = { lat: latitude, lng: longitude };
+                    },
+                    () => {
+                        document.getElementById('gps-signal-pill').textContent = '🧭 Mode Simulasi';
+                    },
+                    { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 }
+                );
+            }
+
+            updateLiveMetricsUI();
+            renderLiveFogCanvas();
+
+            clearInterval(state.timerInterval);
+            state.timerInterval = setInterval(() => {
+                if (!state.isPaused) {
+                    state.secondsElapsed += 1;
+                    // Smooth hybrid fallback progression when stationary indoors
+                    const speedKmPerSec = state.mode === 'Run' ? 0.0033 : (state.mode === 'Jog' ? 0.0025 : 0.0015);
+                    state.distanceKm += speedKmPerSec;
+                    advanceLiveRoutePosition(0.06);
+                    updateLiveMetricsUI();
+                    renderLiveFogCanvas();
+                }
+            }, 1000);
+
+            showToast('⚡', `Mode ${state.mode} aktif! Rute & kabut direkam.`);
+        }
+
+        function advanceLiveRoutePosition(stepDelta) {
+            const route = CITY_DATA.simRoute;
+            if (state.liveRouteIdx >= route.length - 1) return;
+
+            state.liveRouteSubProgress += stepDelta;
+            while (state.liveRouteSubProgress >= 1 && state.liveRouteIdx < route.length - 1) {
+                state.liveRouteSubProgress -= 1;
+                state.liveRouteIdx += 1;
+                const pt = { x: route[state.liveRouteIdx].x, y: route[state.liveRouteIdx].y };
+                livePathHistory.push(pt);
+                state.exploredPoints.push(pt);
+            }
+
+            const curr = route[state.liveRouteIdx];
+            const next = route[Math.min(state.liveRouteIdx + 1, route.length - 1)];
+            const interpX = curr.x + (next.x - curr.x) * state.liveRouteSubProgress;
+            const interpY = curr.y + (next.y - curr.y) * state.liveRouteSubProgress;
+
+            const last = livePathHistory[livePathHistory.length - 1];
+            if (!last || Math.hypot(interpX - last.x, interpY - last.y) > 0.01) {
+                livePathHistory.push({ x: interpX, y: interpY });
+            }
+
+            document.getElementById('live-current-street').textContent = curr.street;
+        }
+
+        function boostLiveSimulation() {
+            if (state.isPaused) return;
+            const addKm = 0.50;
+            const addSec = state.mode === 'Run' ? 158 : (state.mode === 'Jog' ? 195 : 310);
+            state.distanceKm += addKm;
+            state.secondsElapsed += addSec;
+            advanceLiveRoutePosition(1.4);
+            updateLiveMetricsUI();
+            renderLiveFogCanvas();
+            showToast('⏩', '+0.50 km! Kabut jalan terbuka.');
+        }
+
+        function updateLiveMetricsUI() {
+            document.getElementById('live-distance').textContent = state.distanceKm.toFixed(2);
+            document.getElementById('live-duration').textContent = formatDuration(state.secondsElapsed);
+
+            let paceStr = state.mode === 'Run' ? '05:18' : (state.mode === 'Jog' ? '06:30' : '10:30');
+            if (state.distanceKm > 0.02) {
+                const totalMin = state.secondsElapsed / 60;
+                const paceDec = totalMin / state.distanceKm;
+                const pMin = Math.floor(paceDec);
+                const pSec = Math.floor((paceDec - pMin) * 60);
+                paceStr = `${String(pMin).padStart(2, '0')}:${String(pSec).padStart(2, '0')}`;
+            }
+            document.getElementById('live-pace').textContent = paceStr;
+
+            if (state.ghostEnabled) {
+                const deltaMeters = Math.round(14 + Math.sin(state.secondsElapsed * 0.25) * 9);
+                const ghostEl = document.getElementById('ghost-status-text');
+                if (deltaMeters >= 0) {
+                    ghostEl.textContent = `+${deltaMeters}m di depan bayanganmu`;
+                    ghostEl.className = 'text-xs font-extrabold font-mono tabular-nums text-lime-400';
+                } else {
+                    ghostEl.textContent = `${deltaMeters}m di belakang bayanganmu`;
+                    ghostEl.className = 'text-xs font-extrabold font-mono tabular-nums text-rose-400';
+                }
+            }
+        }
+
+        function renderLiveFogCanvas() {
+            const canvas = document.getElementById('live-fog-canvas');
+            if (!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width || 334;
+            canvas.height = rect.height || 176;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            drawCityBaseLayer(ctx, w, h, true);
+
+            const fogCanvas = document.createElement('canvas');
+            fogCanvas.width = w;
+            fogCanvas.height = h;
+            const fCtx = fogCanvas.getContext('2d');
+
+            fCtx.fillStyle = 'rgba(4, 7, 15, 0.84)';
+            fCtx.fillRect(0, 0, w, h);
+
+            if (livePathHistory.length > 0) {
+                fCtx.globalCompositeOperation = 'destination-out';
+                fCtx.lineCap = 'round';
+                fCtx.lineJoin = 'round';
+                fCtx.lineWidth = 44;
+                fCtx.beginPath();
+                livePathHistory.forEach((pt, idx) => {
+                    if (idx === 0) fCtx.moveTo(pt.x * w, pt.y * h);
+                    else fCtx.lineTo(pt.x * w, pt.y * h);
+                });
+                fCtx.stroke();
+
+                const head = livePathHistory[livePathHistory.length - 1];
+                const grad = fCtx.createRadialGradient(head.x * w, head.y * h, 10, head.x * w, head.y * h, 36);
+                grad.addColorStop(0, 'rgba(0,0,0,1)');
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                fCtx.fillStyle = grad;
+                fCtx.beginPath();
+                fCtx.arc(head.x * w, head.y * h, 36, 0, Math.PI * 2);
+                fCtx.fill();
+            }
+
+            ctx.drawImage(fogCanvas, 0, 0);
+
+            if (livePathHistory.length > 0) {
+                const accent = MODE_THEMES[state.mode].accentHex;
+                ctx.strokeStyle = accent;
+                ctx.lineWidth = 3.5;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                livePathHistory.forEach((pt, idx) => {
+                    if (idx === 0) ctx.moveTo(pt.x * w, pt.y * h);
+                    else ctx.lineTo(pt.x * w, pt.y * h);
+                });
+                ctx.stroke();
+
+                const head = livePathHistory[livePathHistory.length - 1];
+                ctx.fillStyle = 'rgba(163, 230, 53, 0.3)';
+                ctx.beginPath();
+                ctx.arc(head.x * w, head.y * h, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#FFFFFF';
+                ctx.beginPath();
+                ctx.arc(head.x * w, head.y * h, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function peekMindfulNumbers() {
+            const std = document.getElementById('live-metrics-standard');
+            const mind = document.getElementById('live-metrics-mindful');
+            mind.classList.add('hidden');
+            mind.classList.remove('flex');
+            std.classList.remove('hidden');
+
+            setTimeout(() => {
+                if (state.isRunning && state.mindfulEnabled) {
+                    std.classList.add('hidden');
+                    mind.classList.remove('hidden');
+                    mind.classList.add('flex');
+                }
+            }, 3000);
+        }
+
+        function togglePauseActivity() {
+            state.isPaused = !state.isPaused;
+            document.getElementById('pause-icon').textContent = state.isPaused ? '▶️' : '⏸️';
+            document.getElementById('pause-text').textContent = state.isPaused ? 'Lanjut' : 'Jeda';
+            showToast(state.isPaused ? '⏸️' : '▶️', state.isPaused ? 'Sesi dijeda sementara' : 'Melanjutkan sesi');
+        }
+
+        function finishActivity() {
+            clearInterval(state.timerInterval);
+            if (state.geoWatchId !== null && 'geolocation' in navigator) {
+                navigator.geolocation.clearWatch(state.geoWatchId);
+                state.geoWatchId = null;
+            }
+            state.isRunning = false;
+
+            if (state.distanceKm < 0.1) {
+                state.distanceKm = 2.65;
+                state.secondsElapsed = 845;
+            }
+
+            document.getElementById('view-live').classList.add('hidden');
+            document.getElementById('view-live').classList.remove('flex');
+            const summary = document.getElementById('view-summary');
+            summary.classList.remove('hidden');
+            summary.classList.add('flex');
+
+            const paceStr = document.getElementById('live-pace').textContent;
+            const currentStreet = document.getElementById('live-current-street').textContent;
+
+            document.getElementById('story-km').textContent = `${state.distanceKm.toFixed(2)} km`;
+            document.getElementById('story-time').textContent = formatDuration(state.secondsElapsed);
+            document.getElementById('story-pace').textContent = paceStr;
+            document.getElementById('story-area-name').textContent = `📍 Jl. Ahmad Yani → ${currentStreet}`;
+            updateStoryBadge();
+        }
+
+        // ==========================================================
+        // 8. SUMMARY & AUTO-STORY PNG STICKER GENERATOR
+        // ==========================================================
+        function selectMood(emoji, label, btnEl) {
+            state.selectedMood = { emoji, label };
+            document.querySelectorAll('.mood-btn').forEach(b => {
+                b.className = 'mood-btn glass-panel rounded-2xl py-2 flex flex-col items-center gap-0.5 transition';
+            });
+            btnEl.className = 'mood-btn bg-lime-400/15 border-2 border-lime-400 rounded-2xl py-2 flex flex-col items-center gap-0.5 transition';
+            updateStoryBadge();
+        }
+
+        function updateStoryBadge() {
+            document.getElementById('story-badge').textContent = `${state.mode.toUpperCase()} • ${state.selectedMood.emoji}`;
+        }
+
+        function setStoryTheme(theme) {
+            state.storyTheme = theme;
+            const card = document.getElementById('story-card');
+            const path = document.getElementById('story-route-path');
+
+            if (theme === 'obsidian') {
+                card.className = 'w-full rounded-2xl p-4 bg-[#070A11]/92 text-white backdrop-blur-xl border border-white/15 shadow-2xl transition-all duration-300';
+                path.setAttribute('stroke', '#A3E635');
+            } else if (theme === 'frosted') {
+                card.className = 'w-full rounded-2xl p-4 bg-white/85 text-slate-900 backdrop-blur-xl border border-white shadow-2xl transition-all duration-300';
+                path.setAttribute('stroke', '#0284C7');
+            } else if (theme === 'neon') {
+                card.className = 'w-full rounded-2xl p-4 bg-gradient-to-br from-lime-400 via-emerald-400 to-cyan-400 text-slate-950 backdrop-blur-xl border border-white/40 shadow-2xl transition-all duration-300';
+                path.setAttribute('stroke', '#070A11');
+            }
+        }
+
+        function generateAndDownloadStickerPNG(dataObj) {
+            const c = document.createElement('canvas');
+            c.width = 720;
+            c.height = 460;
+            const ctx = c.getContext('2d');
+
+            // Transparent outer background with rounded card
+            const theme = dataObj.theme || 'obsidian';
+            if (theme === 'frosted') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+            } else if (theme === 'neon') {
+                const grad = ctx.createLinearGradient(0, 0, 720, 460);
+                grad.addColorStop(0, '#A3E635');
+                grad.addColorStop(1, '#22D3EE');
+                ctx.fillStyle = grad;
+            } else {
+                ctx.fillStyle = 'rgba(7, 10, 17, 0.94)';
+            }
+
+            ctx.beginPath();
+            ctx.roundRect(24, 24, 672, 412, 44);
+            ctx.fill();
+
+            ctx.strokeStyle = theme === 'frosted' ? 'rgba(15,23,42,0.15)' : 'rgba(255,255,255,0.18)';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            const fgMain = theme === 'obsidian' ? '#FFFFFF' : '#070A11';
+            const fgMuted = theme === 'obsidian' ? '#94A3B8' : '#334155';
+            const routeColor = theme === 'obsidian' ? '#A3E635' : (theme === 'frosted' ? '#0284C7' : '#070A11');
+
+            // Brand Header
+            ctx.fillStyle = fgMain;
+            ctx.font = '800 30px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText('Jejak.', 64, 84);
+
+            ctx.fillStyle = fgMuted;
+            ctx.font = '700 22px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(`${dataObj.mode.toUpperCase()} • ${dataObj.mood}`, 656, 84);
+
+            ctx.textAlign = 'left';
+            ctx.font = '600 20px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(`📍 ${dataObj.area}`, 64, 122);
+
+            // Stylized Route Line
+            ctx.strokeStyle = routeColor;
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(120, 260);
+            ctx.bezierCurveTo(220, 140, 340, 290, 460, 180);
+            ctx.quadraticCurveTo(540, 130, 600, 230);
+            ctx.stroke();
+
+            // Stats Footer
+            const cols = [
+                { label: 'JARAK', val: dataObj.kmText, x: 160 },
+                { label: 'WAKTU', val: dataObj.timeText, x: 360 },
+                { label: 'PACE', val: dataObj.paceText, x: 560 }
+            ];
+            ctx.textAlign = 'center';
+            cols.forEach(col => {
+                ctx.fillStyle = fgMain;
+                ctx.font = '800 34px "JetBrains Mono", monospace';
+                ctx.fillText(col.val, col.x, 355);
+                ctx.fillStyle = fgMuted;
+                ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(col.label, col.x, 386);
+            });
+
+            // Trigger PNG Download
+            const link = document.createElement('a');
+            link.download = `Jejak-Story-${Date.now()}.png`;
+            link.href = c.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('🖼️', 'Stiker Auto-Story PNG berhasil diunduh ke Galeri!');
+        }
+
+        function downloadStoryPNG() {
+            generateAndDownloadStickerPNG({
+                theme: state.storyTheme,
+                mode: state.mode,
+                mood: state.selectedMood.emoji,
+                area: document.getElementById('story-area-name').textContent.replace('📍 ', ''),
+                kmText: document.getElementById('story-km').textContent,
+                timeText: document.getElementById('story-time').textContent,
+                paceText: document.getElementById('story-pace').textContent
+            });
+        }
+
+        function downloadModalStoryPNG() {
+            if (!state.activeModalItem) return;
+            const item = state.activeModalItem;
+            generateAndDownloadStickerPNG({
+                theme: 'obsidian',
+                mode: item.mode,
+                mood: item.mood,
+                area: item.area,
+                kmText: `${item.km.toFixed(2)} km`,
+                timeText: item.duration,
+                paceText: item.pace
+            });
+        }
+
+        function saveRunToHistory() {
+            const areaName = document.getElementById('story-area-name').textContent.replace('📍 ', '');
+            const newEntry = {
+                id: Date.now(),
+                mode: state.mode,
+                area: areaName,
+                date: 'Hari ini • Baru saja',
+                km: parseFloat(state.distanceKm.toFixed(2)),
+                duration: formatDuration(state.secondsElapsed),
+                pace: document.getElementById('story-pace').textContent,
+                mood: state.selectedMood.emoji,
+                path: 'M 15 65 Q 35 15, 65 40 T 115 25 T 145 55'
+            };
+
+            state.history.unshift(newEntry);
+            state.fogPercent = Math.min(100, +(state.fogPercent + 2.1).toFixed(1));
+            savePersistedState();
+            updateWeeklyStatsUI();
+
+            document.getElementById('view-summary').classList.add('hidden');
+            document.getElementById('view-summary').classList.remove('flex');
+            document.getElementById('bottom-nav').classList.remove('hidden');
+            switchTab('history');
+            showToast('💾', 'Tersimpan permanen di MatePad! Kabut +2.1%');
+        }
+
+        // ==========================================================
+        // 9. INTERACTIVE FOG OF WAR CITY EXPLORER (PERSISTENT)
+        // ==========================================================
+        let explorerFogCanvas = null;
+        let explorerFogCtx = null;
+        let explorerEventsBound = false;
+
+        function initExplorerFogCanvas() {
+            const canvas = document.getElementById('explorer-fog-canvas');
+            if (!canvas) return;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width || 334;
+            canvas.height = rect.height || 385;
+            const w = canvas.width;
+            const h = canvas.height;
+
+            if (!explorerFogCanvas || explorerFogCanvas.width !== w) {
+                explorerFogCanvas = document.createElement('canvas');
+                explorerFogCanvas.width = w;
+                explorerFogCanvas.height = h;
+                explorerFogCtx = explorerFogCanvas.getContext('2d');
+                seedInitialFogMask();
+            }
+
+            const discoveredCount = CITY_DATA.landmarks.filter(l => l.discovered).length;
+            document.getElementById('hud-landmarks-count').textContent = `${discoveredCount}/${CITY_DATA.landmarks.length}`;
+
+            renderExplorerMap();
+
+            if (!explorerEventsBound) {
+                let isWiping = false;
+                const handlePointer = (clientX, clientY) => {
+                    const bounds = canvas.getBoundingClientRect();
+                    const nx = (clientX - bounds.left) / bounds.width;
+                    const ny = (clientY - bounds.top) / bounds.height;
+                    revealFogAtNormalized(nx, ny, 28, true);
+                };
+
+                canvas.addEventListener('mousedown', (e) => { isWiping = true; handlePointer(e.clientX, e.clientY); });
+                canvas.addEventListener('mousemove', (e) => { if (isWiping) handlePointer(e.clientX, e.clientY); });
+                window.addEventListener('mouseup', () => { isWiping = false; });
+
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const t = e.touches[0];
+                    handlePointer(t.clientX, t.clientY);
+                }, { passive: false });
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const t = e.touches[0];
+                    handlePointer(t.clientX, t.clientY);
+                }, { passive: false });
+
+                explorerEventsBound = true;
+            }
+        }
+
+        function seedInitialFogMask() {
+            if (!explorerFogCtx) return;
+            const w = explorerFogCanvas.width;
+            const h = explorerFogCanvas.height;
+
+            explorerFogCtx.globalCompositeOperation = 'source-over';
+            explorerFogCtx.fillStyle = 'rgba(4, 7, 15, 0.90)';
+            explorerFogCtx.fillRect(0, 0, w, h);
+
+            explorerFogCtx.globalCompositeOperation = 'destination-out';
+            explorerFogCtx.lineCap = 'round';
+            explorerFogCtx.lineJoin = 'round';
+            explorerFogCtx.lineWidth = 42;
+
+            explorerFogCtx.beginPath();
+            explorerFogCtx.moveTo(0.42 * w, 0.92 * h);
+            explorerFogCtx.lineTo(0.42 * w, 0.16 * h);
+            explorerFogCtx.lineTo(0.20 * w, 0.30 * h);
+            explorerFogCtx.stroke();
+
+            explorerFogCtx.beginPath();
+            explorerFogCtx.moveTo(0.25 * w, 0.48 * h);
+            explorerFogCtx.lineTo(0.74 * w, 0.48 * h);
+            explorerFogCtx.stroke();
+
+            // Replay persisted explored coordinates from localStorage
+            state.exploredPoints.forEach(pt => {
+                const px = pt.x * w;
+                const py = pt.y * h;
+                const grad = explorerFogCtx.createRadialGradient(px, py, 10, px, py, 30);
+                grad.addColorStop(0, 'rgba(0,0,0,1)');
+                grad.addColorStop(1, 'rgba(0,0,0,0)');
+                explorerFogCtx.fillStyle = grad;
+                explorerFogCtx.beginPath();
+                explorerFogCtx.arc(px, py, 30, 0, Math.PI * 2);
+                explorerFogCtx.fill();
+            });
+        }
+
+        function revealFogAtNormalized(nx, ny, radiusPx = 30, incrementStats = true) {
+            if (!explorerFogCtx) return;
+            const w = explorerFogCanvas.width;
+            const h = explorerFogCanvas.height;
+            const px = nx * w;
+            const py = ny * h;
+
+            state.playerPos = { x: nx, y: ny };
+            state.exploredPoints.push({ x: +nx.toFixed(3), y: +ny.toFixed(3) });
+
+            explorerFogCtx.globalCompositeOperation = 'destination-out';
+            const grad = explorerFogCtx.createRadialGradient(px, py, radiusPx * 0.35, px, py, radiusPx);
+            grad.addColorStop(0, 'rgba(0,0,0,1)');
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+            explorerFogCtx.fillStyle = grad;
+            explorerFogCtx.beginPath();
+            explorerFogCtx.arc(px, py, radiusPx, 0, Math.PI * 2);
+            explorerFogCtx.fill();
+
+            CITY_DATA.landmarks.forEach(lm => {
+                if (!lm.discovered && Math.hypot(lm.x - nx, lm.y - ny) < 0.09) {
+                    lm.discovered = true;
+                    showToast(lm.icon, `Landmark ditemukan: ${lm.name}!`);
+                    document.getElementById('discovered-landmark-title').textContent = `${lm.icon} ${lm.name} Ditemukan!`;
+                }
+            });
+
+            const discoveredCount = CITY_DATA.landmarks.filter(l => l.discovered).length;
+            document.getElementById('hud-landmarks-count').textContent = `${discoveredCount}/${CITY_DATA.landmarks.length}`;
+
+            if (incrementStats) {
+                state.fogPercent = Math.min(100, +(state.fogPercent + 0.08).toFixed(1));
+                updateWeeklyStatsUI();
+                savePersistedState();
+            }
+
+            renderExplorerMap();
+        }
+
+        function renderExplorerMap() {
+            const canvas = document.getElementById('explorer-fog-canvas');
+            if (!canvas || !explorerFogCanvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            drawCityBaseLayer(ctx, w, h, true);
+            ctx.drawImage(explorerFogCanvas, 0, 0);
+
+            const px = state.playerPos.x * w;
+            const py = state.playerPos.y * h;
+
+            ctx.fillStyle = 'rgba(34, 211, 238, 0.25)';
+            ctx.beginPath();
+            ctx.arc(px, py, 14, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#22D3EE';
+            ctx.beginPath();
+            ctx.arc(px, py, 5.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function toggleMapAutoWalk() {
+            if (state.mapAutoWalkActive) {
+                stopMapAutoWalk();
+            } else {
+                state.mapAutoWalkActive = true;
+                document.getElementById('sim-walk-icon').textContent = '⏹️';
+                document.getElementById('sim-walk-label').textContent = 'Stop Simulasi';
+                showToast('🚶', 'Menyusuri jalan kota secara real-time...');
+
+                state.mapAutoWalkInterval = setInterval(() => {
+                    const route = CITY_DATA.simRoute;
+                    state.explorerRouteIdx = (state.explorerRouteIdx + 1) % route.length;
+                    const target = route[state.explorerRouteIdx];
+                    document.getElementById('map-hud-location').textContent = `${target.street} • Bekasi`;
+                    revealFogAtNormalized(target.x, target.y, 34, true);
+                }, 650);
+            }
+        }
+
+        function stopMapAutoWalk() {
+            state.mapAutoWalkActive = false;
+            clearInterval(state.mapAutoWalkInterval);
+            const icon = document.getElementById('sim-walk-icon');
+            const lbl = document.getElementById('sim-walk-label');
+            if (icon) icon.textContent = '🚶';
+            if (lbl) lbl.textContent = 'Simulasi Jalan';
+        }
+
+        function useRealGPSLocation() {
+            if (!navigator.geolocation) {
+                showToast('⚠️', 'Browser tidak mendukung GPS, gunakan Simulasi Jalan.');
+                return;
+            }
+            showToast('🛰️', 'Mencari koordinat GPS MatePad...');
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const latFrac = Math.abs((pos.coords.latitude * 1000) % 1);
+                    const lngFrac = Math.abs((pos.coords.longitude * 1000) % 1);
+                    const nx = 0.2 + latFrac * 0.6;
+                    const ny = 0.2 + lngFrac * 0.6;
+                    document.getElementById('map-hud-location').textContent = `GPS: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`;
+                    revealFogAtNormalized(nx, ny, 38, true);
+                    showToast('🎯', 'Lokasi GPS terkunci! Kabut terbuka.');
+                },
+                () => {
+                    document.getElementById('map-hud-location').textContent = 'Jl. Kartini (GPS Fallback)';
+                    revealFogAtNormalized(0.86, 0.42, 38, true);
+                    showToast('📍', 'Izin GPS dibatasi, menggunakan posisi simulasi kota.');
+                },
+                { timeout: 5000 }
+            );
+        }
+
+        function resetFogDemo() {
+            stopMapAutoWalk();
+            state.fogPercent = 32.0;
+            state.exploredPoints = [];
+            savePersistedState();
+            updateWeeklyStatsUI();
+            seedInitialFogMask();
+            renderExplorerMap();
+            showToast('🌫️', 'Kabut kota di-reset ke kondisi awal.');
+        }
+
+        // ==========================================================
+        // 10. HISTORY LIST & MODAL
+        // ==========================================================
+        function renderHistoryList() {
+            const listEl = document.getElementById('history-list');
+            document.getElementById('history-count-badge').textContent = `${state.history.length} Sesi`;
+
+            listEl.innerHTML = state.history.map(item => {
+                const badgeStyle = item.mode === 'Run'
+                    ? 'bg-lime-400/15 text-lime-500 dark:text-lime-400 border-lime-400/25'
+                    : (item.mode === 'Jog' ? 'bg-cyan-400/15 text-cyan-500 dark:text-cyan-400 border-cyan-400/25' : 'bg-rose-400/15 text-rose-500 dark:text-rose-400 border-rose-400/25');
+                const strokeHex = MODE_THEMES[item.mode]?.accentHex || '#A3E635';
+
+                return `
+                <div onclick="openHistoryModal(${item.id})" class="cursor-pointer glass-panel p-4 rounded-3xl hover:border-lime-400/40 transition active:scale-[0.99] flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3.5 min-w-0">
+                        <div class="w-12 h-12 rounded-2xl bg-slate-900/90 flex items-center justify-center p-1.5 border border-white/10 shrink-0">
+                            <svg class="w-full h-full" viewBox="0 0 160 70">
+                                <path d="${item.path}" fill="none" stroke="${strokeHex}" stroke-width="6" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="truncate">
+                            <div class="flex items-center gap-2 mb-0.5">
+                                <span class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md border ${badgeStyle}">${item.mode}</span>
+                                <span class="text-[10px] text-slate-400 truncate">${item.date}</span>
+                            </div>
+                            <div class="text-base font-extrabold font-mono tabular-nums">
+                                ${item.km.toFixed(2)} <span class="text-xs font-sans font-normal text-slate-400">km</span>
+                                <span class="text-slate-600 mx-1">•</span>
+                                <span class="text-sm font-bold">${item.duration}</span>
+                            </div>
+                            <div class="text-[11px] text-slate-400 truncate mt-0.5">📍 ${item.area}</div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col items-end shrink-0">
+                        <span class="text-xl">${item.mood}</span>
+                        <span class="text-[10px] font-mono text-slate-400 mt-0.5">${item.pace}/km</span>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function openHistoryModal(id) {
+            const item = state.history.find(r => r.id === id);
+            if (!item) return;
+            state.activeModalItem = item;
+
+            document.getElementById('modal-badge').textContent = `${item.mode.toUpperCase()} • ${item.mood}`;
+            document.getElementById('modal-date').textContent = `${item.date} • ${item.area}`;
+            document.getElementById('modal-km').textContent = `${item.km.toFixed(2)} km`;
+            document.getElementById('modal-time').textContent = item.duration;
+            document.getElementById('modal-pace').textContent = item.pace;
+            document.getElementById('modal-route-path').setAttribute('d', item.path);
+            document.getElementById('modal-route-path').setAttribute('stroke', MODE_THEMES[item.mode]?.accentHex || '#A3E635');
+
+            document.getElementById('history-modal').classList.remove('hidden');
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('history-modal').classList.add('hidden');
+        }
+
+        function formatDuration(totalSeconds) {
+            const mins = Math.floor(totalSeconds / 60);
+            const secs = totalSeconds % 60;
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const clockEl = document.getElementById('status-clock');
+            if (clockEl) clockEl.textContent = `${hh}:${mm}`;
+        }
+
+        window.onload = function() {
+            loadPersistedState();
+            renderHistoryList();
+            updateClock();
+            setInterval(updateClock, 15000);
+        };
+    </script>
+</body>
+</html>
