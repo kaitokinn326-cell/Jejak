@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jejak-shell-v2';
+const CACHE_NAME = 'jejak-shell-v3';
 const APP_SHELL = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', (event) => {
