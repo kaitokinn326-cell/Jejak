@@ -148,7 +148,7 @@
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <div class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                                <span id="home-location-label">📍 Bekasi Selatan • Siap Jelajah</span>
+                                <span id="home-location-label">📍 GPS • Lokasi aktual</span>
                             </div>
                             <h1 class="text-2xl font-extrabold tracking-tight flex items-center gap-1.5 mt-0.5">
                                 Jejak<span id="brand-dot" class="w-2 h-2 rounded-full bg-lime-400 inline-block mt-1 transition-colors"></span>
@@ -165,14 +165,14 @@
                         <div class="flex items-center justify-between gap-3">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-1.5">
-                                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Eksplorasi Tersimpan</span>
+                                    <span class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Ringkasan Aktivitas</span>
                                 </div>
                                 <div class="flex items-baseline gap-1.5">
                                     <span id="stat-weekly-km" class="text-2xl font-extrabold font-mono tabular-nums">14.8</span>
                                     <span class="text-xs font-semibold text-slate-400">/ 20 km target</span>
                                 </div>
                                 <div class="mt-2.5 flex items-center gap-2 flex-wrap">
-                                    <span id="weekly-fog-badge" class="text-[11px] font-bold text-lime-500 dark:text-lime-400 bg-lime-400/10 border border-lime-400/20 px-2.5 py-0.5 rounded-full">🗺️ 38.4% Kota Terbuka</span>
+                                    
                                     <span id="stat-weekly-runs" class="text-[11px] font-semibold text-slate-400">• 4 Sesi</span>
                                 </div>
                             </div>
@@ -266,7 +266,7 @@
                 <div class="pt-4">
                     <button id="btn-start-main" onclick="startActivity()" class="w-full py-4 rounded-3xl bg-lime-400 hover:bg-lime-300 text-slate-950 font-extrabold text-base tracking-wide shadow-xl shadow-lime-400/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5">
                         <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        <span>Mulai <span id="start-btn-mode">Run</span> (GPS MENUNGGUulasi)</span>
+                        <span>Mulai <span id="start-btn-mode">Run</span></span>
                     </button>
                 </div>
             </div>
@@ -289,32 +289,7 @@
 
                     </div>
 
-                    <!-- Ghost Runner Real-Time Distance Indicator -->
-                    <div id="live-ghost-banner" class="mb-2.5 glass-panel rounded-2xl px-3.5 py-2 border-cyan-400/30 flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="text-base">👻</span>
-                            <span class="text-xs font-bold text-cyan-400">Ghost PB</span>
-                        </div>
-                        <span id="ghost-status-text" class="text-xs font-extrabold font-mono tabular-nums text-lime-400">+12m di depan bayanganmu</span>
-                    </div>
-
-                    <!-- REAL-TIME LIVE FOG OF WAR MINI-MAP WITH STREETS & LANDMARKS -->
-                    <div class="relative w-full h-44 rounded-3xl overflow-hidden border border-white/15 bg-[#060911] shadow-2xl">
-                        <canvas id="live-fog-canvas" class="w-full h-full block"></canvas>
-                        <!-- Live Street Name HUD -->
-                        <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
-                            <div class="bg-slate-950/85 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-bold text-slate-200 border border-white/10 flex items-center gap-1.5">
-                                <span class="w-1.5 h-1.5 rounded-full bg-lime-400"></span>
-                                <span id="live-current-street">Menunggu lokasi GPS…</span>
-                            </div>
-                            <div class="bg-slate-950/85 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-mono font-bold text-cyan-400 border border-white/10">
-                                Kabut Terbuka
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Center Metrics: Standard vs Mindful Mode -->
+                    <!-- Center Metrics: Standard vs Mindful Mode -->
                 <div class="my-auto py-2">
                     <!-- Standard Sports Metrics -->
                     <div id="live-metrics-standard" class="text-center space-y-3">
@@ -373,7 +348,7 @@
                 <div>
                     <div class="flex items-center justify-between mb-3">
                         <h2 class="text-lg font-extrabold">Aktivitas Selesai! 🎉</h2>
-                        <span id="summary-fog-gain" class="text-[11px] font-bold text-lime-500 dark:text-lime-400 bg-lime-400/10 border border-lime-400/20 px-2.5 py-1 rounded-full">+2.1% Wilayah</span>
+                        
                     </div>
 
                     <!-- Mood Selector -->
@@ -418,16 +393,7 @@
                                     </span>
                                     <span id="story-badge" class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-white/10">RUN • 😄</span>
                                 </div>
-                                <div id="story-area-name" class="text-[10px] opacity-75 font-medium mb-1">📍 Jl. Ahmad Yani → Taman Kota</div>
-
-                                <!-- Route SVG -->
-                                <div class="my-1.5 flex justify-center">
-                                    <svg class="w-44 h-20 overflow-visible" viewBox="0 0 160 80">
-                                        <path id="story-route-path" d="M 15 65 Q 35 15, 65 40 T 115 25 T 145 55" fill="none" stroke="#A3E635" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <circle cx="15" cy="65" r="4" fill="#A3E635"/>
-                                        <circle cx="145" cy="55" r="4.5" fill="#FFFFFF" stroke="#A3E635" stroke-width="2"/>
-                                    </svg>
-                                </div>
+                                <div class="text-[10px] opacity-75 font-medium mb-1">GPS TRACKING • REAL DATA</div>
 
                                 <div class="grid grid-cols-3 gap-2 pt-2 border-t border-current/10 text-center">
                                     <div>
@@ -458,65 +424,7 @@
                 </div>
             </div>
 
-            <!-- ====================================================== -->
-            <!-- VIEW 4: PETA KABUT REAL-TIME (FOG OF WAR CITY MAP)     -->
-            <!-- ====================================================== -->
-            <div id="view-fog" class="hidden flex-1 flex-col px-5 pt-2 pb-24 overflow-y-auto no-scrollbar">
-                <!-- HUD Header -->
-                <div class="flex items-center justify-between mb-2.5">
-                    <div>
-                        <h2 class="text-lg font-extrabold flex items-center gap-1.5">
-                            Peta Kabut Kota
-                            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                        </h2>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Tersimpan otomatis di memori MatePad</p>
-                    </div>
-                    <div class="text-right glass-panel px-3 py-1.5 rounded-2xl">
-                        <div id="fog-percentage-text" class="text-base font-extrabold font-mono tabular-nums text-lime-500 dark:text-lime-400">38.4%</div>
-                        <div class="text-[9px] uppercase font-bold text-slate-400">Wilayah Terbuka</div>
-                    </div>
-                </div>
-
-                <!-- Interactive Real-Time City Vector + Fog of War Canvas -->
-                <div class="relative w-full h-[385px] rounded-3xl overflow-hidden border border-white/15 bg-[#060911] shadow-2xl mb-3">
-                    <canvas id="explorer-fog-canvas" class="w-full h-full block cursor-crosshair touch-none"></canvas>
-
-                    <!-- Top Map HUD Pill -->
-                    <div class="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 pointer-events-none">
-                        <div class="bg-slate-950/85 backdrop-blur-md px-3 py-1.5 rounded-full text-[10px] font-bold text-slate-200 border border-white/10 flex items-center gap-1.5 truncate">
-                            <span class="text-lime-400">📍</span>
-                            <span id="map-hud-location">Lokasi GPS belum diambil</span>
-                        </div>
-                        <div class="bg-slate-950/85 backdrop-blur-md px-2.5 py-1.5 rounded-full text-[10px] font-mono font-bold text-cyan-400 border border-white/10 shrink-0">
-                            <span id="hud-landmarks-count">4/7</span> Landmark
-                        </div>
-                    </div>
-
-                    <!-- Bottom Interactive Controls inside Map -->
-                    <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
-                        <button onclick="useRealGPSLocation()" class="flex-1 bg-slate-950/90 hover:bg-slate-900 backdrop-blur-md text-white border border-white/15 py-2.5 px-3 rounded-2xl text-[11px] font-bold flex items-center justify-center gap-1.5 shadow-lg transition active:scale-95">
-                            <span class="text-cyan-400">🎯</span>
-                            <span>Lokasi Saya (GPS)</span>
-                        </button>
-                        <button id="btn-sim-walk" onclick="toggleMapAutoWalk()" class="flex-1 bg-lime-400 hover:bg-lime-300 text-slate-950 py-2.5 px-3 rounded-2xl text-[11px] font-extrabold flex items-center justify-center gap-1.5 shadow-lg shadow-lime-400/25 transition active:scale-95">
-                            <span id="sim-walk-icon">🚶</span>
-                            <span id="sim-walk-label">Simulasi Jalan</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Discovered Streets & Landmarks Legend Card -->
-                <div class="glass-panel p-3.5 rounded-2xl flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-lime-400/15 text-lime-500 dark:text-lime-400 flex items-center justify-center text-lg border border-lime-400/20">🧭</div>
-                        <div>
-                            <div class="text-xs font-bold" id="discovered-landmark-title">Stadion Patriot & Taman Kota</div>
-                            <div class="text-[11px] text-slate-500 dark:text-slate-400">Usap peta atau pakai GPS untuk membuka jalan baru</div>
-                        </div>
-                    </div>
-                    <button onclick="resetFogDemo()" class="text-[10px] font-bold text-slate-400 hover:text-white px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10">Reset</button>
-                </div>
-            </div>
+            
 
 
         </div>
@@ -529,11 +437,7 @@
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 <span class="text-[10px] font-extrabold">Lari</span>
             </button>
-            <button onclick="switchTab('fog')" id="nav-fog" class="nav-item flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
-                <span class="text-[10px] font-bold">Peta Kabut</span>
-            </button>
-        </div>
+</div>
 
         <!-- ========================================================== -->
         <!-- MODAL: PANDUAN INSTALL PWA DI HUAWEI MATEPAD               -->
@@ -615,61 +519,6 @@
         }
 
         // ==========================================================
-        // 2. CITY MAP DATA (BEKASI STREETS, PARKS, RIVER, LANDMARKS)
-        // ==========================================================
-        const STORAGE_KEYS = {
-            FOG_POINTS: 'jejak_pwa_fog_points_v1',
-            FOG_PCT: 'jejak_pwa_fog_pct_v1',
-            DISCOVERED_LM: 'jejak_pwa_landmarks_v1'
-        };
-
-        const CITY_DATA = {
-            river: [
-                { x: 0.72, y: 0.0 },
-                { x: 0.68, y: 0.28 },
-                { x: 0.76, y: 0.58 },
-                { x: 0.70, y: 1.0 }
-            ],
-            parks: [
-                { name: 'Taman Kota Bekasi', x: 0.14, y: 0.24, w: 0.24, h: 0.18, color: 'rgba(16, 185, 129, 0.18)' },
-                { name: 'Hutan Kota Patriot', x: 0.44, y: 0.56, w: 0.20, h: 0.16, color: 'rgba(16, 185, 129, 0.16)' }
-            ],
-            roads: [
-                { name: 'Jl. Ahmad Yani', major: true, pts: [{x: 0.42, y: 0.0}, {x: 0.42, y: 1.0}], labelPos: {x: 0.42, y: 0.46, angle: -Math.PI/2} },
-                { name: 'Jl. KH. Noer Ali', major: true, pts: [{x: 0.0, y: 0.48}, {x: 1.0, y: 0.48}], labelPos: {x: 0.22, y: 0.48, angle: 0} },
-                { name: 'Jl. Sudirman', major: true, pts: [{x: 0.0, y: 0.18}, {x: 1.0, y: 0.20}], labelPos: {x: 0.62, y: 0.19, angle: 0} },
-                { name: 'Jl. Kemakmuran', major: false, pts: [{x: 0.14, y: 0.0}, {x: 0.14, y: 1.0}], labelPos: {x: 0.14, y: 0.72, angle: -Math.PI/2} },
-                { name: 'Jl. Veteran', major: false, pts: [{x: 0.0, y: 0.78}, {x: 0.72, y: 0.78}], labelPos: {x: 0.28, y: 0.78, angle: 0} },
-                { name: 'Jl. Kartini', major: false, pts: [{x: 0.86, y: 0.0}, {x: 0.86, y: 1.0}], labelPos: {x: 0.86, y: 0.65, angle: -Math.PI/2} }
-            ],
-            landmarks: [
-                { id: 'stadion', name: 'Stadion Patriot', icon: '🏟️', x: 0.30, y: 0.34, discovered: true },
-                { id: 'taman', name: 'Taman Kota', icon: '🌳', x: 0.24, y: 0.28, discovered: true },
-                { id: 'stasiun', name: 'Stasiun Bekasi', icon: '🚆', x: 0.56, y: 0.14, discovered: true },
-                { id: 'danau', name: 'Danau Summarecon', icon: '🌊', x: 0.58, y: 0.64, discovered: true },
-                { id: 'kafe', name: 'Kopi Tepi Kali', icon: '☕', x: 0.72, y: 0.42, discovered: false },
-                { id: 'alun', name: 'Alun-Alun Kota', icon: '🏛️', x: 0.26, y: 0.84, discovered: false },
-                { id: 'boulevard', name: 'Boulevard Timur', icon: '🏙️', x: 0.88, y: 0.28, discovered: false }
-            ],
-            simRoute: [
-                { x: 0.42, y: 0.85, street: 'Jl. Ahmad Yani' },
-                { x: 0.42, y: 0.65, street: 'Jl. Ahmad Yani' },
-                { x: 0.42, y: 0.48, street: 'Simpang Jl. KH. Noer Ali' },
-                { x: 0.60, y: 0.48, street: 'Jl. KH. Noer Ali' },
-                { x: 0.72, y: 0.48, street: 'Jembatan Kali Bekasi' },
-                { x: 0.86, y: 0.48, street: 'Jl. Kartini' },
-                { x: 0.86, y: 0.28, street: 'Boulevard Timur' },
-                { x: 0.86, y: 0.19, street: 'Jl. Sudirman' },
-                { x: 0.60, y: 0.19, street: 'Jl. Sudirman • Stasiun' },
-                { x: 0.42, y: 0.18, street: 'Jl. Ahmad Yani Utara' },
-                { x: 0.24, y: 0.18, street: 'Taman Kota Bekasi' },
-                { x: 0.14, y: 0.34, street: 'Jl. Kemakmuran' },
-                { x: 0.14, y: 0.60, street: 'Jl. Kemakmuran Selatan' },
-                { x: 0.14, y: 0.78, street: 'Jl. Veteran' },
-                { x: 0.30, y: 0.78, street: 'Alun-Alun Kota' }
-            ]
-        };
-
         // 3. APPLICATION STATE & LOCALSTORAGE PERSISTENCE
         // ==========================================================
         const state = {
@@ -682,66 +531,18 @@
             isPaused: false,
             secondsElapsed: 0,
             distanceKm: 0.0,
-            liveRouteIdx: 0,
-            liveRouteSubProgress: 0,
-            timerInterval: null,
+timerInterval: null,
             geoWatchId: null,
             lastRealCoords: null,
             selectedMood: { emoji: '😄', label: 'Segar' },
             storyTheme: 'obsidian',
-            fogPercent: 38.4,
-            exploredPoints: [],
-            mapAutoWalkActive: false,
-            mapAutoWalkInterval: null,
-            explorerRouteIdx: 4,
-            playerPos: { x: 0.72, y: 0.48 },
-        };
-
-        function loadPersistedState() {
-            try {
-const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
-                if (savedFogPct) state.fogPercent = parseFloat(savedFogPct);
-
-                const savedFogPts = localStorage.getItem(STORAGE_KEYS.FOG_POINTS);
-                if (savedFogPts) state.exploredPoints = JSON.parse(savedFogPts);
-
-                const savedLandmarks = localStorage.getItem(STORAGE_KEYS.DISCOVERED_LM);
-                if (savedLandmarks) {
-                    const ids = JSON.parse(savedLandmarks);
-                    CITY_DATA.landmarks.forEach(lm => {
-                        if (ids.includes(lm.id)) lm.discovered = true;
-                    });
-                }
-            } catch (e) {
-            }
-            updateWeeklyStatsUI();
-        }
-
-        function savePersistedState() {
-            try {
-                localStorage.setItem(STORAGE_KEYS.FOG_PCT, String(state.fogPercent));
-                // Keep last 400 fog clear coordinates to stay lightweight
-                if (state.exploredPoints.length > 400) {
-                    state.exploredPoints = state.exploredPoints.slice(-400);
-                }
-                localStorage.setItem(STORAGE_KEYS.FOG_POINTS, JSON.stringify(state.exploredPoints));
-                const discoveredIds = CITY_DATA.landmarks.filter(l => l.discovered).map(l => l.id);
-                localStorage.setItem(STORAGE_KEYS.DISCOVERED_LM, JSON.stringify(discoveredIds));
-            } catch (e) {}
-        }
+};
 
         function updateWeeklyStatsUI() {
-            const totalKm = 0;
             document.getElementById('stat-weekly-km').textContent = '—';
             document.getElementById('stat-weekly-runs').textContent = '• Riwayat nonaktif';
-
-            const pct = Math.min(100, Math.round((totalKm / 20) * 100));
-            document.getElementById('weekly-ring-pct').textContent = `${pct}%`;
-            const offset = 163.36 - (163.36 * pct) / 100;
-            document.getElementById('weekly-progress-ring').setAttribute('stroke-dashoffset', offset);
-
-            document.getElementById('weekly-fog-badge').textContent = `🗺️ ${state.fogPercent}% Kota Terbuka`;
-            document.getElementById('fog-percentage-text').textContent = `${state.fogPercent}%`;
+            document.getElementById('weekly-ring-pct').textContent = '0%';
+            document.getElementById('weekly-progress-ring').setAttribute('stroke-dashoffset', 163.36);
         }
 
         // Haversine GPS distance in km
@@ -791,28 +592,10 @@ const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
         // ==========================================================
         function switchTab(tabName) {
             state.currentTab = tabName;
-            ['home', 'fog'].forEach(v => {
-                const el = document.getElementById(`view-${v}`);
-                const nav = document.getElementById(`nav-${v}`);
-                if (v === tabName) {
-                    el.classList.remove('hidden');
-                    el.classList.add('flex');
-                    nav.classList.remove('text-slate-400');
-                    nav.classList.add('text-lime-500', 'dark:text-lime-400');
-                } else {
-                    el.classList.add('hidden');
-                    el.classList.remove('flex');
-                    nav.classList.add('text-slate-400');
-                    nav.classList.remove('text-lime-500', 'dark:text-lime-400');
-                }
-            });
-
-            if (tabName === 'fog') {
-                setTimeout(initExplorerFogCanvas, 40);
-            } else {
-                stopMapAutoWalk();
-            }
-}
+            const home = document.getElementById('view-home');
+            home.classList.remove('hidden');
+            home.classList.add('flex');
+        }
 
         function toggleAppTheme() {
             document.documentElement.classList.toggle('dark');
@@ -898,119 +681,14 @@ const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
         }
 
         // ==========================================================
-        // 6. CITY VECTOR MAP RENDERER
-        // ==========================================================
-        function drawCityBaseLayer(ctx, w, h, showLabels = true) {
-            ctx.fillStyle = '#0B101D';
-            ctx.fillRect(0, 0, w, h);
-
-            ctx.fillStyle = '#111829';
-            const blockPositions = [
-                [0.18, 0.04, 0.20, 0.11], [0.46, 0.04, 0.20, 0.11],
-                [0.46, 0.24, 0.18, 0.20], [0.18, 0.52, 0.20, 0.22],
-                [0.46, 0.82, 0.20, 0.14], [0.76, 0.52, 0.08, 0.22]
-            ];
-            blockPositions.forEach(([bx, by, bw, bh]) => {
-                ctx.beginPath();
-                ctx.roundRect(bx * w, by * h, bw * w, bh * h, 6);
-                ctx.fill();
-            });
-
-            CITY_DATA.parks.forEach(p => {
-                ctx.fillStyle = p.color;
-                ctx.beginPath();
-                ctx.roundRect(p.x * w, p.y * h, p.w * w, p.h * h, 12);
-                ctx.fill();
-                ctx.strokeStyle = 'rgba(16, 185, 129, 0.35)';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-
-                if (showLabels) {
-                    ctx.fillStyle = 'rgba(52, 211, 153, 0.85)';
-                    ctx.font = '600 9px "Plus Jakarta Sans", sans-serif';
-                    ctx.fillText(p.name, (p.x + 0.02) * w, (p.y + p.h * 0.55) * h);
-                }
-            });
-
-            ctx.strokeStyle = 'rgba(34, 211, 238, 0.28)';
-            ctx.lineWidth = 14;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.beginPath();
-            CITY_DATA.river.forEach((pt, idx) => {
-                if (idx === 0) ctx.moveTo(pt.x * w, pt.y * h);
-                else ctx.lineTo(pt.x * w, pt.y * h);
-            });
-            ctx.stroke();
-
-            CITY_DATA.roads.forEach(road => {
-                ctx.strokeStyle = road.major ? '#26324B' : '#1B2438';
-                ctx.lineWidth = road.major ? 7 : 4.5;
-                ctx.lineCap = 'round';
-                ctx.beginPath();
-                road.pts.forEach((pt, i) => {
-                    if (i === 0) ctx.moveTo(pt.x * w, pt.y * h);
-                    else ctx.lineTo(pt.x * w, pt.y * h);
-                });
-                ctx.stroke();
-
-                if (road.major) {
-                    ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
-                    ctx.lineWidth = 1;
-                    ctx.setLineDash([4, 4]);
-                    ctx.stroke();
-                    ctx.setLineDash([]);
-                }
-
-                if (showLabels && road.labelPos) {
-                    ctx.save();
-                    ctx.translate(road.labelPos.x * w, road.labelPos.y * h);
-                    ctx.rotate(road.labelPos.angle);
-                    ctx.fillStyle = '#94A3B8';
-                    ctx.font = '700 8.5px "Plus Jakarta Sans", sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(road.name, 0, -5);
-                    ctx.restore();
-                }
-            });
-
-            CITY_DATA.landmarks.forEach(lm => {
-                const lx = lm.x * w;
-                const ly = lm.y * h;
-
-                ctx.fillStyle = lm.discovered ? 'rgba(163, 230, 53, 0.2)' : 'rgba(148, 163, 184, 0.15)';
-                ctx.beginPath();
-                ctx.arc(lx, ly, 10, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.font = '12px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(lm.icon, lx, ly);
-
-                if (showLabels) {
-                    ctx.fillStyle = '#E2E8F0';
-                    ctx.font = '700 8.5px "Plus Jakarta Sans", sans-serif';
-                    ctx.fillText(lm.name, lx, ly + 14);
-                }
-            });
-        }
-
-        // ==========================================================
         // 7. LIVE TRACKER REAL-TIME GPS + FALLBACK SIMULATOR
         // ==========================================================
-        let livePathHistory = [];
-
         function startActivity() {
             state.isRunning = true;
             state.isPaused = false;
             state.secondsElapsed = 0;
             state.distanceKm = 0.0;
-            state.liveRouteIdx = 0;
-            state.liveRouteSubProgress = 0;
-            state.lastRealCoords = null;
-
-            livePathHistory = [];
+state.lastRealCoords = null;
 
             document.getElementById('view-home').classList.add('hidden');
             document.getElementById('bottom-nav').classList.add('hidden');
@@ -1039,8 +717,7 @@ const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
 
             document.getElementById('pause-icon').textContent = '⏸️';
             document.getElementById('pause-text').textContent = 'Jeda';
-            document.getElementById('live-current-street').textContent = 'Menunggu lokasi GPS…';
-            document.getElementById('gps-signal-pill').textContent = 'GPS MENUNGGU';
+document.getElementById('gps-signal-pill').textContent = 'GPS MENUNGGU';
 
             // GPS asli saja; lokasi dan jarak simulasi dimatikan.
             if ('geolocation' in navigator) {
@@ -1048,8 +725,7 @@ const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
                     (pos) => {
                         if (state.isPaused) return;
                         const { latitude, longitude, accuracy } = pos.coords;
-                        document.getElementById('live-current-street').textContent = `GPS ${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
-                        document.getElementById('gps-signal-pill').textContent = accuracy <= 50 ? `GPS ±${Math.round(accuracy)}m` : `GPS lemah ±${Math.round(accuracy)}m`;
+document.getElementById('gps-signal-pill').textContent = accuracy <= 50 ? `GPS ±${Math.round(accuracy)}m` : `GPS lemah ±${Math.round(accuracy)}m`;
                         if (!Number.isFinite(accuracy) || accuracy > 50) return;
                         const stamp = Number(pos.timestamp) || Date.now();
                         if (state.lastRealCoords) {
@@ -1064,55 +740,24 @@ const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
                     (error) => {
                         const message = error.code === 1 ? 'Izin GPS ditolak' : (error.code === 2 ? 'Sinyal GPS tidak tersedia' : 'GPS timeout');
                         document.getElementById('gps-signal-pill').textContent = message;
-                        document.getElementById('live-current-street').textContent = 'Lokasi GPS tidak tersedia';
-                    },
+},
                     { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
                 );
             } else {
                 document.getElementById('gps-signal-pill').textContent = 'GPS tidak didukung';
-                document.getElementById('live-current-street').textContent = 'GPS tidak didukung browser';
-            }
+}
 
             updateLiveMetricsUI();
-            renderLiveFogCanvas();
-
-            clearInterval(state.timerInterval);
+clearInterval(state.timerInterval);
             state.timerInterval = setInterval(() => {
                 if (!state.isPaused) {
                     state.secondsElapsed += 1;
                     // Timer tetap berjalan; jarak hanya berasal dari GPS valid.
                     updateLiveMetricsUI();
-                    renderLiveFogCanvas();
-                }
+        }
             }, 1000);
 
             showToast('⚡', `Mode ${state.mode} aktif! Menunggu GPS yang akurat.`);
-        }
-
-        function advanceLiveRoutePosition(stepDelta) {
-            const route = CITY_DATA.simRoute;
-            if (state.liveRouteIdx >= route.length - 1) return;
-
-            state.liveRouteSubProgress += stepDelta;
-            while (state.liveRouteSubProgress >= 1 && state.liveRouteIdx < route.length - 1) {
-                state.liveRouteSubProgress -= 1;
-                state.liveRouteIdx += 1;
-                const pt = { x: route[state.liveRouteIdx].x, y: route[state.liveRouteIdx].y };
-                livePathHistory.push(pt);
-                state.exploredPoints.push(pt);
-            }
-
-            const curr = route[state.liveRouteIdx];
-            const next = route[Math.min(state.liveRouteIdx + 1, route.length - 1)];
-            const interpX = curr.x + (next.x - curr.x) * state.liveRouteSubProgress;
-            const interpY = curr.y + (next.y - curr.y) * state.liveRouteSubProgress;
-
-            const last = livePathHistory[livePathHistory.length - 1];
-            if (!last || Math.hypot(interpX - last.x, interpY - last.y) > 0.01) {
-                livePathHistory.push({ x: interpX, y: interpY });
-            }
-
-            document.getElementById('live-current-street').textContent = curr.street;
         }
 
         function updateLiveMetricsUI() {
@@ -1139,76 +784,6 @@ const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
                     ghostEl.textContent = `${deltaMeters}m di belakang bayanganmu`;
                     ghostEl.className = 'text-xs font-extrabold font-mono tabular-nums text-rose-400';
                 }
-            }
-        }
-
-        function renderLiveFogCanvas() {
-            const canvas = document.getElementById('live-fog-canvas');
-            if (!canvas) return;
-            const rect = canvas.parentElement.getBoundingClientRect();
-            canvas.width = rect.width || 334;
-            canvas.height = rect.height || 176;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width;
-            const h = canvas.height;
-
-            drawCityBaseLayer(ctx, w, h, true);
-
-            const fogCanvas = document.createElement('canvas');
-            fogCanvas.width = w;
-            fogCanvas.height = h;
-            const fCtx = fogCanvas.getContext('2d');
-
-            fCtx.fillStyle = 'rgba(4, 7, 15, 0.84)';
-            fCtx.fillRect(0, 0, w, h);
-
-            if (livePathHistory.length > 0) {
-                fCtx.globalCompositeOperation = 'destination-out';
-                fCtx.lineCap = 'round';
-                fCtx.lineJoin = 'round';
-                fCtx.lineWidth = 44;
-                fCtx.beginPath();
-                livePathHistory.forEach((pt, idx) => {
-                    if (idx === 0) fCtx.moveTo(pt.x * w, pt.y * h);
-                    else fCtx.lineTo(pt.x * w, pt.y * h);
-                });
-                fCtx.stroke();
-
-                const head = livePathHistory[livePathHistory.length - 1];
-                const grad = fCtx.createRadialGradient(head.x * w, head.y * h, 10, head.x * w, head.y * h, 36);
-                grad.addColorStop(0, 'rgba(0,0,0,1)');
-                grad.addColorStop(1, 'rgba(0,0,0,0)');
-                fCtx.fillStyle = grad;
-                fCtx.beginPath();
-                fCtx.arc(head.x * w, head.y * h, 36, 0, Math.PI * 2);
-                fCtx.fill();
-            }
-
-            ctx.drawImage(fogCanvas, 0, 0);
-
-            if (livePathHistory.length > 0) {
-                const accent = MODE_THEMES[state.mode].accentHex;
-                ctx.strokeStyle = accent;
-                ctx.lineWidth = 3.5;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.beginPath();
-                livePathHistory.forEach((pt, idx) => {
-                    if (idx === 0) ctx.moveTo(pt.x * w, pt.y * h);
-                    else ctx.lineTo(pt.x * w, pt.y * h);
-                });
-                ctx.stroke();
-
-                const head = livePathHistory[livePathHistory.length - 1];
-                ctx.fillStyle = 'rgba(163, 230, 53, 0.3)';
-                ctx.beginPath();
-                ctx.arc(head.x * w, head.y * h, 10, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.fillStyle = '#FFFFFF';
-                ctx.beginPath();
-                ctx.arc(head.x * w, head.y * h, 4.5, 0, Math.PI * 2);
-                ctx.fill();
             }
         }
 
@@ -1250,12 +825,10 @@ const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
             summary.classList.add('flex');
 
             const paceStr = document.getElementById('live-pace').textContent;
-            const currentStreet = document.getElementById('live-current-street').textContent;
 
             document.getElementById('story-km').textContent = `${state.distanceKm.toFixed(2)} km`;
             document.getElementById('story-time').textContent = formatDuration(state.secondsElapsed);
             document.getElementById('story-pace').textContent = paceStr;
-            document.getElementById('story-area-name').textContent = `📍 ${currentStreet}`;
             updateStoryBadge();
         }
 
@@ -1286,17 +859,13 @@ const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
         function setStoryTheme(theme) {
             state.storyTheme = theme;
             const card = document.getElementById('story-card');
-            const path = document.getElementById('story-route-path');
 
             if (theme === 'obsidian') {
                 card.className = 'w-full rounded-2xl p-4 bg-[#070A11]/92 text-white backdrop-blur-xl border border-white/15 shadow-2xl transition-all duration-300';
-                path.setAttribute('stroke', '#A3E635');
             } else if (theme === 'frosted') {
                 card.className = 'w-full rounded-2xl p-4 bg-white/85 text-slate-900 backdrop-blur-xl border border-white shadow-2xl transition-all duration-300';
-                path.setAttribute('stroke', '#0284C7');
             } else if (theme === 'neon') {
                 card.className = 'w-full rounded-2xl p-4 bg-gradient-to-br from-lime-400 via-emerald-400 to-cyan-400 text-slate-950 backdrop-blur-xl border border-white/40 shadow-2xl transition-all duration-300';
-                path.setAttribute('stroke', '#070A11');
             }
         }
 
@@ -1408,7 +977,7 @@ const savedFogPct = localStorage.getItem(STORAGE_KEYS.FOG_PCT);
         }
 
         window.onload = function() {
-            loadPersistedState();
+            updateWeeklyStatsUI();
             updateClock();
             setInterval(updateClock, 15000);
         };
