@@ -191,6 +191,20 @@
                         </div>
                     </div>
 
+                    <!-- GPS Permission -->
+                    <div class="glass-panel rounded-2xl p-3.5 mb-4 border border-cyan-400/20">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-cyan-400/15 text-cyan-400 flex items-center justify-center text-lg">📍</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-bold">Izin Lokasi & GPS</div>
+                                <p id="gps-permission-status" class="text-[10px] text-slate-400 mt-0.5">Belum diperiksa. Aktifkan agar Jejak bisa merekam rute.</p>
+                            </div>
+                        </div>
+                        <button id="btn-enable-gps" onclick="requestLocationPermission()" class="w-full mt-3 py-3 rounded-xl bg-cyan-400/15 border border-cyan-400/30 text-cyan-500 dark:text-cyan-300 font-extrabold text-xs active:scale-[0.98] transition">
+                            📍 Izinkan Akses Lokasi
+                        </button>
+                    </div>
+
                     <!-- Dynamic Activity Mode Selector (Run / Jog / Walk) -->
                     <div class="mb-4">
                         <div class="flex items-center justify-between mb-2">
@@ -550,6 +564,7 @@
 timerInterval: null,
             geoWatchId: null,
             lastRealCoords: null,
+            gpsPermissionStatus: 'prompt',
             routePoints: [],
             routeMap: null,
             routeLine: null,
@@ -704,6 +719,54 @@ timerInterval: null,
         // ==========================================================
         // 7. LIVE TRACKER REAL-TIME GPS + FALLBACK SIMULATOR
         // ==========================================================
+        function setGpsPermissionMessage(message, status = 'prompt') {
+            state.gpsPermissionStatus = status;
+            const label = document.getElementById('gps-permission-status');
+            const button = document.getElementById('btn-enable-gps');
+            if (label) label.textContent = message;
+            if (button) {
+                button.textContent = status === 'granted' ? '✓ Izin Lokasi Aktif' : '📍 Izinkan Akses Lokasi';
+                button.classList.toggle('border-lime-400/40', status === 'granted');
+                button.classList.toggle('text-lime-500', status === 'granted');
+            }
+        }
+
+        function requestLocationPermission() {
+            if (!window.isSecureContext) {
+                setGpsPermissionMessage('GPS perlu koneksi aman (HTTPS). Buka Jejak melalui alamat GitHub Pages.', 'error');
+                showToast('⚠️', 'GPS hanya bisa dipakai melalui HTTPS.');
+                return;
+            }
+            if (!navigator.geolocation) {
+                setGpsPermissionMessage('Browser ini tidak mendukung layanan lokasi.', 'error');
+                showToast('⚠️', 'Geolocation tidak didukung browser.');
+                return;
+            }
+
+            setGpsPermissionMessage('Meminta izin lokasi dari browser...', 'prompt');
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const accuracy = Math.round(position.coords.accuracy);
+                    setGpsPermissionMessage(`Izin aktif • Akurasi GPS sekitar ±${accuracy} meter. Kamu bisa mulai merekam rute.`, 'granted');
+                    document.getElementById('home-location-label').textContent = '📍 GPS • Izin aktif';
+                    showToast('📍', 'Izin lokasi berhasil diberikan.');
+                },
+                (error) => {
+                    if (error.code === 1) {
+                        setGpsPermissionMessage('Izin ditolak. Ubah izin Lokasi menjadi Allow di pengaturan situs browser.', 'denied');
+                        showToast('⚠️', 'Izin lokasi ditolak. Periksa izin situs.');
+                    } else if (error.code === 2) {
+                        setGpsPermissionMessage('Lokasi belum tersedia. Aktifkan layanan lokasi perangkat dan coba di area terbuka.', 'error');
+                        showToast('⚠️', 'Sinyal lokasi belum tersedia.');
+                    } else {
+                        setGpsPermissionMessage('GPS belum merespons. Coba lagi dan pastikan layanan lokasi perangkat aktif.', 'error');
+                        showToast('⚠️', 'GPS timeout. Coba lagi.');
+                    }
+                },
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+            );
+        }
+
         function initializeRouteMap() {
             const mapEl = document.getElementById('route-map');
             if (!mapEl || !window.L) {
