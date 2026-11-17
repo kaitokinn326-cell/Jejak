@@ -670,54 +670,6 @@
             ]
         };
 
-        const DEFAULT_HISTORY = [
-            {
-                id: 1,
-                mode: 'Run',
-                area: 'Jl. Ahmad Yani → Stadion Patriot',
-                date: '15 Nov 2026 • 06:15',
-                km: 5.20,
-                duration: '28:36',
-                pace: '05:30',
-                mood: '🔥',
-                path: 'M 10 55 C 40 10, 70 65, 105 25 S 140 45, 150 20'
-            },
-            {
-                id: 2,
-                mode: 'Jog',
-                area: 'Taman Kota → Jl. KH. Noer Ali',
-                date: '13 Nov 2026 • 17:10',
-                km: 3.50,
-                duration: '22:45',
-                pace: '06:30',
-                mood: '😌',
-                path: 'M 15 20 Q 55 65, 85 30 T 145 50'
-            },
-            {
-                id: 3,
-                mode: 'Walk',
-                area: 'Danau Summarecon Loop',
-                date: '11 Nov 2026 • 07:00',
-                km: 4.10,
-                duration: '45:10',
-                pace: '11:01',
-                mood: '😄',
-                path: 'M 20 60 L 50 20 L 100 25 L 135 55'
-            },
-            {
-                id: 4,
-                mode: 'Run',
-                area: 'Jl. Sudirman Sprint',
-                date: '09 Nov 2026 • 06:00',
-                km: 2.00,
-                duration: '10:40',
-                pace: '05:20',
-                mood: '🥵',
-                path: 'M 15 45 Q 80 5, 145 45'
-            }
-        ];
-
-        // ==========================================================
         // 3. APPLICATION STATE & LOCALSTORAGE PERSISTENCE
         // ==========================================================
         const state = {
@@ -743,7 +695,6 @@
             mapAutoWalkInterval: null,
             explorerRouteIdx: 4,
             playerPos: { x: 0.72, y: 0.48 },
-            activeModalItem: null
         };
 
         function loadPersistedState() {
